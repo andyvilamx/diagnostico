@@ -99,4 +99,176 @@
     <button class="tab" onclick="goTab('t-redes',this)">Redes sociales</button>
     <button class="tab" onclick="goTab('t-patrones',this)">Patrones</button>
     <button class="tab" onclick="goTab('t-propuesta',this)">Propuesta</button>
-    <button class="tab" onclick="goTab('t-contenido',this)">Contenido</
+    <button class="tab" onclick="goTab('t-contenido',this)">Contenido</button>
+  </div>
+
+  <div id="t-general" class="screen active">
+    <div class="slabel">Información del Prospecto</div>
+    <div class="card">
+      <div class="row2">
+        <div class="field"><label>Nombre</label><input type="text" id="g-nombre" placeholder="Ej. Amelia Díaz"></div>
+        <div class="field"><label>Negocio</label><input type="text" id="g-negocio" placeholder="Ej. Florería"></div>
+      </div>
+      <div class="field"><label>¿Cómo consigue clientes hoy?</label><input type="text" id="g-clientes" placeholder="Ej. Recomendación"></div>
+      <div class="field"><label>Objetivo en 3-6 meses</label><input type="text" id="g-meta" placeholder="Ej. Escalar ventas"></div>
+    </div>
+
+    <div class="slabel">Dolores (Selección rápida)</div>
+    <div class="card">
+      <div class="cg" id="dolores-container">
+        <button class="chip" onclick="tog(this,'dolor')">No sabe qué publicar</button>
+        <button class="chip" onclick="tog(this,'dolor')">Publica y no vende</button>
+        <button class="chip" onclick="tog(this,'dolor')">Baja precios para competir</button>
+        <button class="chip" onclick="tog(this,'dolor')">Esclava de su negocio</button>
+        <button class="chip" onclick="tog(this,'dolor')">Miedo a la cámara</button>
+        <button class="chip" onclick="tog(this,'dolor')">Sin constancia</button>
+      </div>
+      <div class="field" style="margin-top:10px"><label>Frase literal (Dolor exacto)</label><textarea id="g-dolor-txt"></textarea></div>
+    </div>
+
+    <button class="btn-p" onclick="guardar()">Guardar Sesión</button>
+    <div id="msg-g" style="display:none; color: green; font-size: 12px; margin-top: 10px; text-align: center;">✓ Sesión guardada localmente</div>
+  </div>
+
+  <div id="t-redes" class="screen">
+    <div class="slabel">Diagnóstico de Presencia</div>
+    <div id="redes-content">
+        <div class="empty">Primero guarda una sesión en la pestaña de Captura.</div>
+    </div>
+  </div>
+
+  <div id="t-patrones" class="screen">
+    <div id="pat-content"><div class="empty">Captura sesiones para ver el análisis de tu avatar.</div></div>
+  </div>
+
+  <div id="t-propuesta" class="screen">
+    <div class="slabel">Estrategia para</div>
+    <select id="p-sel" onchange="mostrarPropuesta()" style="margin-bottom: 15px;"><option value="">— Selecciona sesión —</option></select>
+    <div id="prop-output"></div>
+  </div>
+
+  <div id="t-contenido" class="screen">
+    <div class="slabel">Ganchos basados en datos</div>
+    <div id="cont-output"></div>
+  </div>
+</div>
+
+<script>
+// Base de datos local
+let DB = JSON.parse(localStorage.getItem('andi_db')) || [];
+let selDolores = [];
+
+function goTab(id, btn) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById(id).classList.add('active');
+  if(id==='t-patrones') renderPat();
+  if(id==='t-propuesta') fillPSel();
+  if(id==='t-contenido') renderCont();
+}
+
+function tog(el, type) {
+  el.classList.toggle('on');
+  let val = el.textContent;
+  if(el.classList.contains('on')) selDolores.push(val);
+  else selDolores = selDolores.filter(d => d !== val);
+}
+
+function guardar() {
+  let nombre = document.getElementById('g-nombre').value;
+  if(!nombre) return alert("Ingresa el nombre");
+  
+  let s = {
+    id: Date.now(),
+    nombre,
+    negocio: document.getElementById('g-negocio').value,
+    clientes: document.getElementById('g-clientes').value,
+    meta: document.getElementById('g-meta').value,
+    dolores: [...selDolores],
+    dolorTxt: document.getElementById('g-dolor-txt').value,
+    fecha: new Date().toLocaleDateString()
+  };
+  
+  DB.push(s);
+  localStorage.setItem('andi_db', JSON.stringify(DB));
+  
+  document.getElementById('msg-g').style.display = 'block';
+  setTimeout(() => {
+      document.getElementById('msg-g').style.display = 'none';
+      location.reload(); // Recarga para limpiar campos
+  }, 1500);
+}
+
+function renderPat() {
+  let el = document.getElementById('pat-content');
+  if(!DB.length) return;
+  
+  let freq = {};
+  DB.forEach(s => s.dolores.forEach(d => freq[d] = (freq[d] || 0) + 1));
+  let sorted = Object.entries(freq).sort((a,b) => b[1]-a[1]);
+  
+  let html = `
+    <div class="metrics">
+        <div class="metric"><div class="metric-label">Sesiones</div><div class="metric-val">${DB.length}</div></div>
+        <div class="metric"><div class="metric-label">Dolor Top</div><div class="metric-val" style="font-size:12px">${sorted[0]?.[0] || '-'}</div></div>
+    </div>
+    <div class="slabel">Frecuencia de Dolores</div>
+  `;
+  
+  sorted.forEach(([d, count]) => {
+      let pct = (count / DB.length) * 100;
+      html += `
+        <div class="card">
+            <div style="display:flex; justify-content:space-between; font-size:12px"><span>${d}</span><span>${count}x</span></div>
+            <div class="pbar"><div class="pfill" style="width:${pct}%"></div></div>
+        </div>
+      `;
+  });
+  el.innerHTML = html;
+}
+
+function fillPSel() {
+  let sel = document.getElementById('p-sel');
+  sel.innerHTML = '<option value="">— Selecciona sesión —</option>' + 
+    DB.map((s, i) => `<option value="${i}">${s.nombre} (${s.negocio})</option>`).join('');
+}
+
+function mostrarPropuesta() {
+  let idx = document.getElementById('p-sel').value;
+  if(idx === "") return;
+  let s = DB[idx];
+  document.getElementById('prop-output').innerHTML = `
+    <div class="pb">
+        <div class="plabel">Diagnóstico para ${s.nombre}</div>
+        <div class="ptext">Consigue clientes por <strong>${s.clientes}</strong>. Su mayor reto es: <em>"${s.dolorTxt}"</em>.</div>
+    </div>
+    <div class="pb">
+        <div class="plabel">Oferta Recomendada</div>
+        <div class="ptext">Mentoría 1:1 enfocada en su meta de <strong>${s.meta}</strong>, aplicando el Método A.N.D.I para posicionarla como autoridad.</div>
+    </div>
+  `;
+}
+
+function renderCont() {
+    let el = document.getElementById('cont-output');
+    if(!DB.length) return;
+    
+    let ideas = [
+        { fmt: 'Reel', txt: '¿Te sientes esclava de tu negocio? Aquí el paso a paso para liberarte.' },
+        { fmt: 'Carrusel', txt: '3 razones por las que no vendes en Instagram (Spoiler: No es el algoritmo).' },
+        { fmt: 'Story', txt: 'Lo que una clienta me confesó hoy sobre su miedo a la cámara...' }
+    ];
+    
+    el.innerHTML = ideas.map(i => `
+        <div class="card">
+            <div style="display:flex; justify-content:space-between">
+                <div class="ptext" style="font-weight:500">${i.txt}</div>
+                <span class="tag tm">${i.fmt}</span>
+            </div>
+        </div>
+    `).join('');
+}
+</script>
+</body>
+</html>
