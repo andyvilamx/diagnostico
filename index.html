@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Diagnóstico ANDI | Andy Vila</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #534AB7;
+            --primary-light: #EEEDFE;
+            --secondary: #3C3489;
+            --accent: #D85A30;
+            --bg-body: #F8F9FC;
+            --bg-card: #FFFFFF;
+            --text-main: #1A1C1E;
+            --text-secondary: #44474E;
+            --text-muted: #74777F;
+            --border: #DEE2E6;
+            --radius-lg: 16px;
+            --radius-md: 8px;
+            --shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            line-height: 1.6;
+        }
+
+        header {
+            background: var(--bg-card);
+            padding: 1.5rem 2rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo-area h1 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--primary);
+            letter-spacing: -0.02em;
+        }
+
+        .logo-area span {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        /* TABS NAVIGATION */
+        .nav-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 2rem;
+            background: #E2E2E9;
+            padding: 4px;
+            border-radius: 12px;
+            width: fit-content;
+        }
+
+        .tab-btn {
+            padding: 8px 20px;
+            border: none;
+            background: transparent;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .tab-btn.active {
+            background: var(--bg-card);
+            color: var(--primary);
+            box-shadow: var(--shadow);
+        }
+
+        /* SCREENS */
+        .screen { display: none; animation: fadeIn 0.3s ease; }
+        .screen.active { display: block; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+        .section-title {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+
+        .card {
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            border: 1px solid var(--border);
+            margin-bottom: 1.5rem;
+            box-shadow: var(--shadow);
+        }
+
+        /* FORM ELEMENTS */
+        .form-group { margin-bottom: 1.2rem; }
+        label { display: block; font-size: 0.85rem; font-weight: 500; color: var(--text-secondary); margin-bottom: 6px; }
+        input, select, textarea {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            font-family: inherit;
+            font-size: 0.95rem;
+            transition: border-color 0.2s;
+        }
+        input:focus, textarea:focus { outline: none; border-color: var(--primary); }
+
+        .chip-group { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0; }
+        .chip {
+            padding: 6px 14px;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            background: var(--bg-body);
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .chip.selected { background: var(--primary); color: white; border-color: var(--primary); }
+
+        /* BUTTONS */
+        .btn-main {
+            background: var(--primary);
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: var(--radius-md);
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: opacity 0.2s;
+        }
+        .btn-main:hover { opacity: 0.9; }
+
+        /* METRICS */
+        .metrics-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+        .metric-card { background: var(--bg-card); padding: 1.5rem; border-radius: var(--radius-lg); border-left: 4px solid var(--primary); box-shadow: var(--shadow); }
+        .metric-label { font-size: 0.8rem; color: var(--text-muted); }
+        .metric-value { font-size: 1.8rem; font-weight: 600; color: var(--text-main); }
+
+        /* ANALYTICS ITEMS */
+        .list-item {
+            padding: 12px;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.9rem;
+            display: flex;
+            justify-content: space-between;
+        }
+        .list-item:last-child { border-bottom: none; }
+        .badge { padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; }
+        .badge-pain { background: #FAECE7; color: #712B13; }
+        .badge-insight { background: #E1F5EE; color: #085041; }
+
+        .progress-bar { height: 8px; background: #EEE; border-radius: 4px; margin-top: 6px; overflow: hidden; }
+        .progress-fill { height: 100%; background: var(--accent); width: 0%; transition: width 0.5s ease; }
+
+        @media (max-width: 768px) { .grid { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="logo-area">
+        <h1>Andy Vila</h1>
+        <span>Método A.N.D.I.</span>
+    </div>
+    <div id="save-status" style="font-size: 0.8rem; color: #1D9E75; opacity: 0;">✓ Datos sincronizados</div>
+</header>
+
+<div class="container">
+    <nav class="nav-tabs">
+        <button class="tab-btn active" onclick="switchTab('captura')">Captura de Sesión</button>
+        <button class="tab-btn" onclick="switchTab('patrones')">Dashboard de Patrones</button>
+        <button class="tab-btn" onclick="switchTab('contenido')">Banco de Ideas</button>
+    </nav>
+
+    <div id="captura" class="screen active">
+        <div class="grid">
+            <div class="col">
+                <div class="section-title">Información del Prospecto</div>
+                <div class="card">
+                    <div class="form-group">
+                        <label>Nombre Completo</label>
+                        <input type="text" id="p-nombre" placeholder="Ej. Ana García">
+                    </div>
+                    <div class="form-group">
+                        <label>Negocio / Giro</label>
+                        <input type="text" id="p-negocio" placeholder="Ej. Agencia de Viajes">
+                    </div>
+                    <div class="form-group">
+                        <label>Presupuesto para inversión</label>
+                        <select id="p-presupuesto">
+                            <option value="no">No disponible / No mencionó</option>
+                            <option value="bajo">Bajo (Solo micro-productos)</option>
+                            <option value="si">Listo para mentoría (High Ticket)</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col">
+                <div class="section-title">Diagnóstico de Situación</div>
+                <div class="card">
+                    <div class="form-group">
+                        <label>¿Cómo consigue clientes hoy?</label>
+                        <textarea id="p-clientes" placeholder="Ej. 100% recomendación, nada de redes..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Punto de Dolor Principal (Selector rápido)</label>
+                        <div class="chip-group" id="dolores-tags">
+                            <span class="chip" onclick="toggleTag(this, 'dolor')">No sabe qué publicar</span>
+                            <span class="chip" onclick="toggleTag(this, 'dolor')">Baja precios para competir</span>
+                            <span class="chip" onclick="toggleTag(this, 'dolor')">Esclava de su negocio</span>
+                            <span class="chip" onclick="toggleTag(this, 'dolor')">Miedo a la cámara</span>
+                            <span class="chip" onclick="toggleTag(this, 'dolor')">Sin constancia</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-title">Insights y Transcripción de Valor</div>
+        <div class="card">
+            <div class="form-group">
+                <label>Insight Clave (Frase literal que dijo)</label>
+                <textarea id="p-insight" style="min-height: 100px;" placeholder="Ej. 'Siento que si no estoy yo, el negocio se muere'"></textarea>
+            </div>
+            <button class="btn-main" onclick="saveSession()">Finalizar Diagnóstico y Registrar Patrón</button>
+        </div>
+    </div>
+
+    <div id="patrones" class="screen">
+        <div class="metrics-row">
+            <div class="metric-card">
+                <div class="metric-label">Sesiones Totales</div>
+                <div id="m-totales" class="metric-value">0</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-label">Potencial High Ticket</div>
+                <div id="m-potencial" class="metric-value">0%</div>
+            </div>
+        </div>
+
+        <div class="grid">
+            <div class="card">
+                <div class="section-title">Frecuencia de Dolores</div>
+                <div id="dolores-stat-list">
+                    </div>
+            </div>
+            <div class="card">
+                <div class="section-title">Muro de Insights Reales</div>
+                <div id="insight-wall" style="max-height: 300px; overflow-y: auto;">
+                    </div>
+            </div>
+        </div>
+        <button class="btn-main" style="background: var(--text-muted);" onclick="exportData()">Exportar Base de Datos (JSON)</button>
+    </div>
+
+    <div id="contenido" class="screen">
+        <div class="section-title">Ganchos basados en Dolores Reales</div>
+        <div id="ideas-container" class="grid">
+            </div>
+    </div>
+</div>
+
+<script>
+    let db = JSON.parse(localStorage.getItem('andi_db')) || [];
+
+    function switchTab(id) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+        event.currentTarget.classList.add('active');
+        if(id === 'patrones') renderAnalytics();
+        if(id === 'contenido') renderContentIdeas();
+    }
+
+    function toggleTag(el) {
+        el.classList.toggle('selected');
+    }
+
+    function saveSession() {
+        const nombre = document.getElementById('p-nombre').value;
+        if(!nombre) return alert("Por favor, ingresa al menos el nombre.");
+
+        const selectedDolores = Array.from(document.querySelectorAll('#dolores-tags .selected')).map(el => el.innerText);
+
+        const session = {
+            id: Date.now(),
+            fecha: new Date().toLocaleDateString(),
+            nombre,
+            negocio: document.getElementById('p-negocio').value,
+            presupuesto: document.getElementById('p-presupuesto').value,
+            clientes: document.getElementById('p-clientes').value,
+            dolores: selectedDolores,
+            insight: document.getElementById('p-insight').value
+        };
+
+        db.push(session);
+        localStorage.setItem('andi_db', JSON.stringify(db));
+        
+        // Reset Form
+        document.querySelectorAll('input, textarea').forEach(i => i.value = '');
+        document.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
+        
+        showStatus();
+    }
+
+    function showStatus() {
+        const status = document.getElementById('save-status');
+        status.style.opacity = "1";
+        setTimeout(() => status.style.opacity = "0", 2000);
+    }
+
+    function renderAnalytics() {
+        document.getElementById('m-totales').innerText = db.length;
+        
+        const ht = db.filter(s => s.presupuesto === 'si').length;
+        const pct = db.length > 0 ? Math.round((ht / db.length) * 100) : 0;
+        document.getElementById('m-potencial').innerText = pct + "%";
+
+        // Stats de dolores
+        const freq = {};
+        db.forEach(s => {
+            s.dolores.forEach(d => freq[d] = (freq[d] || 0) + 1);
+        });
+
+        const sortedDolores = Object.entries(freq).sort((a,b) => b[1] - a[1]);
+        const list = document.getElementById('dolores-stat-list');
+        list.innerHTML = sortedDolores.map(([dolor, count]) => `
+            <div style="margin-bottom:15px">
+                <div class="list-item"><span>${dolor}</span><b>${count} menciones</b></div>
+                <div class="progress-bar"><div class="progress-fill" style="width: ${(count/db.length)*100}%"></div></div>
+            </div>
+        `).join('');
+
+        // Muro de insights
+        const wall = document.getElementById('insight-wall');
+        wall.innerHTML = db.filter(s => s.insight).map(s => `
+            <div class="list-item" style="flex-direction:column">
+                <span style="font-style:italic; color: var(--primary)">"${s.insight}"</span>
+                <small style="color: var(--text-muted)">— ${s.nombre} (${s.negocio})</small>
+            </div>
+        `).reverse().join('');
+    }
+
+    function renderContentIdeas() {
+        const container = document.getElementById('ideas-container');
+        if(db.length === 0) {
+            container.innerHTML = "<p>Captura sesiones para generar ideas basadas en datos reales.</p>";
+            return;
+        }
+
+        // Simulación de generador de ganchos basado en el dolor más frecuente
+        const freq = {};
+        db.forEach(s => s.dolores.forEach(d => freq[d] = (freq[d] || 0) + 1));
+        const topDolor = Object.entries(freq).sort((a,b) => b[1] - a[1])[0]?.[0] || "tu negocio";
+
+        const ideas = [
+            { t: "Storytelling", h: `Por qué ${topDolor} está deteniendo tu crecimiento como mamá emprendedora.` },
+            { t: "Educativo", h: `3 pasos del Método A.N.D.I para dejar de sentir que ${topDolor}.` },
+            { t: "Autoridad", h: `Lo que nadie te dice sobre ${topDolor} (y cómo lo solucioné).` },
+            { t: "Venta", h: `¿Cansada de que ${topDolor}? Mi mentoría 1:1 abre cupos.` }
+        ];
+
+        container.innerHTML = ideas.map(i => `
+            <div class="card">
+                <span class="badge badge-insight">${i.t}</span>
+                <h3 style="font-size:1rem; margin-top:10px">${i.h}</h3>
+            </div>
+        `).join('');
+    }
+
+    function exportData() {
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(db));
+        const downloadAnchorNode = document.createElement('a');
+        downloadAnchorNode.setAttribute("href",     dataStr);
+        downloadAnchorNode.setAttribute("download", "andi_diagnosticos_export.json");
+        document.body.appendChild(downloadAnchorNode);
+        downloadAnchorNode.click();
+        downloadAnchorNode.remove();
+    }
+</script>
+
+</body>
+</html>
