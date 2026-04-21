@@ -3,10 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sistema Diagnóstico ANDI</title>
+<title>Sistema Diagnóstico ANDI | Andy Vila</title>
 <style>
   :root {
-    --font-sans: system-ui, -apple-system, sans-serif;
+    --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+    --primary: #534AB7;
+    --primary-light: #EEEDFE;
+    --secondary: #3C3489;
+    --accent: #D85A30;
     --color-background-primary: #ffffff;
     --color-background-secondary: #f5f4f0;
     --color-text-primary: #1a1a18;
@@ -33,422 +37,66 @@
   *{box-sizing:border-box;margin:0;padding:0}
   body{font-family:var(--font-sans);background:var(--color-background-primary);color:var(--color-text-primary);padding:1.5rem;max-width:740px;margin:0 auto}
   .app{padding:1rem 0;max-width:700px}
+  
+  header { margin-bottom: 1.5rem; border-bottom: 1px solid var(--color-border-tertiary); padding-bottom: 1rem; }
+  header h1 { font-size: 22px; color: var(--primary); font-weight: 600; }
+  header p { font-size: 13px; color: var(--color-text-secondary); }
+
   .tabs{display:flex;gap:5px;margin-bottom:1.5rem;flex-wrap:wrap}
   .tab{padding:6px 13px;border-radius:20px;border:0.5px solid var(--color-border-secondary);background:transparent;font-size:12px;color:var(--color-text-secondary);cursor:pointer;transition:all .15s}
   .tab.active{background:var(--color-background-secondary);color:var(--color-text-primary);font-weight:500;border-color:var(--color-border-primary)}
+  
   .screen{display:none}.screen.active{display:block}
   .slabel{font-size:11px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--color-text-tertiary);margin-bottom:8px;margin-top:1.1rem}
   .slabel:first-child{margin-top:0}
-  .card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:12px;padding:.9rem 1.1rem;margin-bottom:10px}
+  
+  .card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:12px;padding:.9rem 1.1rem;margin-bottom:10px; box-shadow: 0 2px 4px rgba(0,0,0,0.02);}
   input[type=text],textarea,select{width:100%;font-size:13px;padding:7px 10px;border:0.5px solid var(--color-border-secondary);border-radius:8px;background:var(--color-background-primary);color:var(--color-text-primary);font-family:var(--font-sans);margin-top:3px}
   textarea{resize:vertical;min-height:56px;line-height:1.5}
+  
   .field{margin-bottom:10px}
   .field label{font-size:12px;color:var(--color-text-secondary)}
   .row2{display:flex;gap:10px}.row2 .field{flex:1}
+  
   .cg{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}
-  .chip{padding:4px 11px;border-radius:20px;border:0.5px solid var(--color-border-secondary);font-size:12px;color:var(--color-text-secondary);cursor:pointer;background:var(--color-background-primary);transition:all .15s;user-select:none}
-  .chip.on{background:#EEEDFE;border-color:#534AB7;color:#3C3489}
-  .btn-p{padding:8px 18px;background:#534AB7;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;font-family:var(--font-sans)}
-  .btn-s{padding:7px 14px;background:transparent;color:var(--color-text-primary);border:0.5px solid var(--color-border-secondary);border-radius:8px;font-size:12px;cursor:pointer;font-family:var(--font-sans);margin-top:8px}
+  .chip{padding:4px 11px;border-radius:20px;border:0.5px solid var(--color-border-secondary);font-size:11px;color:var(--color-text-secondary);cursor:pointer;background:var(--color-background-primary);transition:all .15s}
+  .chip.on{background:var(--primary-light);border-color:var(--primary);color:var(--secondary)}
+  
+  .btn-p{padding:10px 20px;background:var(--primary);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;width:100%;}
+  .btn-s{padding:7px 14px;background:transparent;color:var(--color-text-primary);border:0.5px solid var(--color-border-secondary);border-radius:8px;font-size:12px;cursor:pointer;margin-top:8px}
+  
   .metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:1.1rem}
-  .metric{background:var(--color-background-secondary);border-radius:8px;padding:10px 12px}
-  .metric-label{font-size:11px;color:var(--color-text-tertiary);margin-bottom:2px}
-  .metric-val{font-size:20px;font-weight:500;color:var(--color-text-primary)}
-  .tag{display:inline-block;padding:3px 9px;border-radius:12px;font-size:11px;font-weight:500;margin:2px}
-  .td{background:#FAECE7;color:#712B13}
-  .tm{background:#EEEDFE;color:#3C3489}
-  .to{background:#FAEEDA;color:#633806}
-  .ti{background:#E1F5EE;color:#085041}
-  .tr{background:#E6F1FB;color:#0C447C}
-  .pbar{height:7px;background:var(--color-background-secondary);border-radius:4px;overflow:hidden;margin-top:3px}
-  .pfill{height:100%;border-radius:4px;background:#D85A30;transition:width .4s}
-  .iitem{border-left:3px solid #534AB7;padding:7px 11px;margin-bottom:7px;background:var(--color-background-secondary);border-radius:0 8px 8px 0}
-  .pb{background:#EEEDFE;border-radius:12px;padding:.85rem 1rem;margin-bottom:9px}
-  .plabel{font-size:10px;font-weight:500;color:#534AB7;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px}
-  .ptext{font-size:13px;color:#26215C;line-height:1.6}
-  .empty{text-align:center;padding:1.5rem 1rem;color:var(--color-text-tertiary);font-size:13px}
-  .notice{background:var(--color-background-secondary);border-radius:8px;padding:10px 14px;font-size:13px;color:var(--color-text-secondary);margin-bottom:12px}
-  h1{font-size:18px;font-weight:500;margin-bottom:4px;color:var(--color-text-primary)}
-  .subtitle{font-size:13px;color:var(--color-text-secondary);margin-bottom:1.5rem}
+  .metric{background:var(--color-background-secondary);border-radius:8px;padding:10px 12px; border-left: 3px solid var(--primary);}
+  .metric-label{font-size:10px;color:var(--color-text-tertiary);text-transform:uppercase;}
+  .metric-val{font-size:20px;font-weight:600;color:var(--color-text-primary)}
+  
+  .tag{display:inline-block;padding:3px 9px;border-radius:12px;font-size:10px;font-weight:500;margin:2px}
+  .td{background:#FAECE7;color:#712B13} /* Dolor */
+  .tm{background:#EEEDFE;color:#3C3489} /* Meta */
+  .to{background:#FAEEDA;color:#633806} /* Objeción */
+  .ti{background:#E1F5EE;color:#085041} /* Insight */
+  
+  .pbar{height:6px;background:var(--color-background-secondary);border-radius:4px;overflow:hidden;margin-top:3px}
+  .pfill{height:100%;background:var(--accent);transition:width .4s}
+  
+  .iitem{border-left:3px solid var(--primary);padding:7px 11px;margin-bottom:7px;background:var(--color-background-secondary);border-radius:0 8px 8px 0}
+  .pb{background:var(--primary-light);border-radius:12px;padding:.85rem 1rem;margin-bottom:9px}
+  .plabel{font-size:10px;font-weight:600;color:var(--primary);text-transform:uppercase;margin-bottom:3px}
+  .ptext{font-size:13px;color:#26215C;line-height:1.5}
+  .empty{text-align:center;padding:2rem;color:var(--color-text-tertiary);font-size:13px}
 </style>
 </head>
 <body>
+
 <div class="app">
-  <h1>Sistema Diagnóstico ANDI</h1>
-  <p class="subtitle">Captura de sesiones · Diagnóstico de redes · Patrones de avatar · Propuestas personalizadas</p>
+  <header>
+    <h1>Andy Vila</h1>
+    <p>Sistema Diagnóstico A.N.D.I. | Marketing para Mamás</p>
+  </header>
 
   <div class="tabs">
-    <button class="tab active" onclick="goTab('t-general',this)">General</button>
+    <button class="tab active" onclick="goTab('t-general',this)">Captura</button>
     <button class="tab" onclick="goTab('t-redes',this)">Redes sociales</button>
     <button class="tab" onclick="goTab('t-patrones',this)">Patrones</button>
     <button class="tab" onclick="goTab('t-propuesta',this)">Propuesta</button>
-    <button class="tab" onclick="goTab('t-contenido',this)">Contenido</button>
-  </div>
-
-  <div id="t-general" class="screen active">
-    <div class="slabel">Datos generales</div>
-    <div class="card">
-      <div class="row2">
-        <div class="field"><label>Nombre</label><input type="text" id="g-nombre" placeholder="Ej. Amelia Díaz"></div>
-        <div class="field"><label>Tipo de negocio</label><input type="text" id="g-negocio" placeholder="Ej. Cabina de belleza"></div>
-      </div>
-      <div class="row2">
-        <div class="field"><label>Ciudad</label><input type="text" id="g-ciudad" placeholder="Ej. Querétaro"></div>
-        <div class="field"><label>Antigüedad en el negocio</label>
-          <select id="g-tiempo"><option value="">—</option><option>Menos de 1 año</option><option>1–2 años</option><option>3–5 años</option><option>Más de 5 años</option></select>
-        </div>
-      </div>
-      <div class="field"><label>¿Cómo consigue clientes hoy?</label><input type="text" id="g-clientes" placeholder="Ej. Solo por recomendación"></div>
-    </div>
-
-    <div class="slabel">Claridad de negocio</div>
-    <div class="card">
-      <div class="row2">
-        <div class="field"><label>¿Sabe a quién le habla?</label>
-          <select id="g-avatar"><option value="">—</option><option>Sí, muy claro</option><option>Más o menos</option><option>No tiene claridad</option></select>
-        </div>
-        <div class="field"><label>¿Sabe qué vende?</label>
-          <select id="g-propuesta"><option value="">—</option><option>Sí, bien definido</option><option>Varios servicios sin foco</option><option>No lo tiene claro</option></select>
-        </div>
-      </div>
-      <div class="field"><label>¿Tiene producto o servicio estrella?</label>
-        <select id="g-estrella"><option value="">—</option><option>Sí</option><option>No, ofrece de todo</option><option>Lo está construyendo</option></select>
-      </div>
-      <div class="field"><label>Objetivo principal en 3–6 meses</label><input type="text" id="g-meta" placeholder="Ej. Llenar agenda solo de aparatología"></div>
-    </div>
-
-    <div class="slabel">Dolores identificados</div>
-    <div class="card">
-      <div class="cg">
-        <button class="chip" onclick="tog(this)">No sabe qué publicar</button>
-        <button class="chip" onclick="tog(this)">Publica y no vende</button>
-        <button class="chip" onclick="tog(this)">Baja precios para competir</button>
-        <button class="chip" onclick="tog(this)">Solo vive de recomendación</button>
-        <button class="chip" onclick="tog(this)">No tiene tiempo para redes</button>
-        <button class="chip" onclick="tog(this)">Copió a la competencia sin resultado</button>
-        <button class="chip" onclick="tog(this)">Tomó cursos sin aplicar</button>
-        <button class="chip" onclick="tog(this)">Se siente invisible</button>
-        <button class="chip" onclick="tog(this)">No sabe comunicar su valor</button>
-        <button class="chip" onclick="tog(this)">Publica sin planificación</button>
-        <button class="chip" onclick="tog(this)">No se diferencia de la competencia</button>
-        <button class="chip" onclick="tog(this)">Agotada de crear contenido</button>
-      </div>
-      <div class="field" style="margin-top:10px"><label>Mayor dolor en sus palabras exactas</label><textarea id="g-dolor-txt" placeholder="Escríbelo tal como lo dijo en la sesión"></textarea></div>
-    </div>
-
-    <div class="slabel">Objeciones y temperatura</div>
-    <div class="card">
-      <div class="cg" id="obj-chips">
-        <button class="chip" onclick="togObj(this)">No tengo tiempo</button>
-        <button class="chip" onclick="togObj(this)">No tengo presupuesto</button>
-        <button class="chip" onclick="togObj(this)">Nunca me ha funcionado</button>
-        <button class="chip" onclick="togObj(this)">No sé si aplica para mi giro</button>
-        <button class="chip" onclick="togObj(this)">Tengo que pensarlo</button>
-        <button class="chip" onclick="togObj(this)">Ya lo intenté sola</button>
-      </div>
-      <div class="row2" style="margin-top:10px">
-        <div class="field"><label>¿Tiene presupuesto?</label>
-          <select id="g-pres"><option value="">—</option><option>Sí, definido</option><option>Sí, con duda</option><option>No por ahora</option><option>No lo mencionó</option></select>
-        </div>
-        <div class="field"><label>Temperatura del lead</label>
-          <select id="g-temp"><option value="">—</option><option>Caliente</option><option>Tibio</option><option>Frío</option></select>
-        </div>
-      </div>
-      <div class="field"><label>Insight clave (frase más reveladora)</label><textarea id="g-insight" placeholder="La idea o frase más importante que dijo"></textarea></div>
-    </div>
-
-    <button class="btn-p" onclick="guardar()">Guardar sesión</button>
-    <span id="msg-g" style="font-size:12px;color:#1D9E75;margin-left:10px;display:none">Sesión guardada ✓</span>
-  </div>
-
-  <div id="t-redes" class="screen">
-    <div class="slabel">Sesión a diagnosticar</div>
-    <div class="card">
-      <div class="field"><label>Selecciona la persona</label>
-        <select id="r-sel" onchange="mostrarRedes()">
-          <option value="">— primero guarda una sesión en "General" —</option>
-        </select>
-      </div>
-    </div>
-    <div id="redes-body">
-      <div class="notice">Guarda una sesión en la pestaña General y luego selecciónala aquí para completar su diagnóstico de redes.</div>
-    </div>
-  </div>
-
-  <div id="t-patrones" class="screen">
-    <div id="pat-content"><div class="empty">Aún no hay sesiones guardadas.</div></div>
-  </div>
-
-  <div id="t-propuesta" class="screen">
-    <div class="slabel">Generar propuesta</div>
-    <div class="card">
-      <div class="field"><label>Selecciona la sesión</label>
-        <select id="p-sel" onchange="mostrarPropuesta()"><option value="">— elige una —</option></select>
-      </div>
-    </div>
-    <div id="prop-output"></div>
-  </div>
-
-  <div id="t-contenido" class="screen">
-    <div id="cont-output"><div class="empty">Guarda al menos una sesión para ver ideas de contenido.</div></div>
-    <button class="btn-s" id="cont-btn" style="display:none" onclick="alert('Conecta esta herramienta a Claude para generar el calendario completo con IA.')">Generar calendario completo con IA ↗</button>
-  </div>
-</div>
-
-<script>
-var DB=[];
-var selDolores=[];
-var selObjs=[];
-
-function goTab(id,btn){
-  document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active')});
-  document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active')});
-  btn.classList.add('active');
-  document.getElementById(id).classList.add('active');
-  if(id==='t-patrones') renderPat();
-  if(id==='t-propuesta') fillPSel();
-  if(id==='t-contenido') renderCont();
-  if(id==='t-redes') fillRSel();
-}
-
-function tog(el){
-  el.classList.toggle('on');
-  var v=el.textContent;
-  var i=selDolores.indexOf(v);
-  if(i>-1) selDolores.splice(i,1); else selDolores.push(v);
-}
-function togObj(el){
-  el.classList.toggle('on');
-  var v=el.textContent;
-  var i=selObjs.indexOf(v);
-  if(i>-1) selObjs.splice(i,1); else selObjs.push(v);
-}
-
-function guardar(){
-  var n=document.getElementById('g-nombre').value.trim();
-  if(!n){alert('Agrega el nombre');return;}
-  var s={
-    id:Date.now(),nombre:n,
-    negocio:document.getElementById('g-negocio').value,
-    ciudad:document.getElementById('g-ciudad').value,
-    tiempo:document.getElementById('g-tiempo').value,
-    clientes:document.getElementById('g-clientes').value,
-    avatar:document.getElementById('g-avatar').value,
-    propuestaValor:document.getElementById('g-propuesta').value,
-    estrella:document.getElementById('g-estrella').value,
-    meta:document.getElementById('g-meta').value,
-    dolores:selDolores.slice(),
-    dolorTxt:document.getElementById('g-dolor-txt').value,
-    objeciones:selObjs.slice(),
-    presupuesto:document.getElementById('g-pres').value,
-    temperatura:document.getElementById('g-temp').value,
-    insight:document.getElementById('g-insight').value,
-    fecha:new Date().toLocaleDateString('es-MX'),
-    redes:null
-  };
-  DB.push(s);
-  resetG();
-  var m=document.getElementById('msg-g');m.style.display='inline';
-  setTimeout(function(){m.style.display='none'},2500);
-  fillRSel();fillPSel();
-}
-
-function resetG(){
-  ['g-nombre','g-negocio','g-ciudad','g-clientes','g-meta','g-dolor-txt','g-insight'].forEach(function(id){document.getElementById(id).value='';});
-  ['g-tiempo','g-avatar','g-propuesta','g-estrella','g-pres','g-temp'].forEach(function(id){document.getElementById(id).value='';});
-  document.querySelectorAll('#t-general .chip.on').forEach(function(c){c.classList.remove('on')});
-  selDolores=[];selObjs=[];
-}
-
-function fillRSel(){
-  var sel=document.getElementById('r-sel');
-  var prev=sel.value;
-  sel.innerHTML='<option value="">— selecciona una sesión —</option>';
-  DB.forEach(function(s,i){sel.innerHTML+='<option value="'+i+'">'+s.nombre+' · '+s.negocio+'</option>';});
-  if(prev!=='') sel.value=prev;
-}
-
-function mostrarRedes(){
-  var idx=document.getElementById('r-sel').value;
-  var body=document.getElementById('redes-body');
-  if(idx===''){body.innerHTML='<div class="notice">Selecciona una sesión para ver su diagnóstico de redes.</div>';return;}
-  var s=DB[parseInt(idx)];
-  var rd=s.redes||{redes:[],principal:'',tipo:'',seguidores:'',frecuencia:'',tipoContenido:[],organico:'',inspiracion:[],herramientas:[],intentos:[],limites:[],observaciones:''};
-
-  body.innerHTML=
-    '<div class="slabel">Presencia en redes</div>'+
-    '<div class="card">'+
-      '<div class="field"><label>Redes que usa actualmente</label>'+
-        '<div class="cg" id="rd-redes">'+
-          chip('Instagram',rd.redes,'rr')+chip('Facebook',rd.redes,'rr')+chip('TikTok',rd.redes,'rr')+chip('WhatsApp Business',rd.redes,'rr')+chip('YouTube',rd.redes,'rr')+chip('Pinterest',rd.redes,'rr')+
-        '</div></div>'+
-      '<div class="row2">'+
-        '<div class="field"><label>Red principal</label><select id="rd-principal">'+opts(['Instagram','Facebook','TikTok','WhatsApp','Ninguna claramente'],rd.principal)+'</select></div>'+
-        '<div class="field"><label>¿Cuenta personal o empresa?</label><select id="rd-tipo">'+opts(['Cuenta de empresa','Cuenta personal','Ambas'],rd.tipo)+'</select></div>'+
-      '</div>'+
-      '<div class="row2">'+
-        '<div class="field"><label>Seguidores aprox.</label><select id="rd-seg">'+opts(['Menos de 500','500–1,000','1,000–5,000','Más de 5,000'],rd.seguidores)+'</select></div>'+
-        '<div class="field"><label>¿Qué tan seguido publica?</label><select id="rd-frec">'+opts(['Todos los días','3–4 veces por semana','1–2 veces por semana','Cuando puede / sin orden','Casi no publica'],rd.frecuencia)+'</select></div>'+
-      '</div>'+
-    '</div>'+
-    '<div class="slabel">Contenido actual</div>'+
-    '<div class="card">'+
-      '<div class="field"><label>Tipo de contenido que publica</label>'+
-        '<div class="cg" id="rd-tc">'+
-          chip('Fotos de servicios/productos',rd.tipoContenido,'tc')+chip('Reels propios',rd.tipoContenido,'tc')+chip('Historias del día a día',rd.tipoContenido,'tc')+chip('Antes y después',rd.tipoContenido,'tc')+chip('Promociones y descuentos',rd.tipoContenido,'tc')+chip('Contenido educativo',rd.tipoContenido,'tc')+chip('Testimonios de clientas',rd.tipoContenido,'tc')+chip('Memes o tendencias',rd.tipoContenido,'tc')+chip('Nada estructurado',rd.tipoContenido,'tc')+
-        '</div></div>'+
-      '<div class="field"><label>¿Es orgánico, pagado o ambos?</label><select id="rd-org">'+opts(['Solo orgánico','Solo pagado','Ambos','Ha probado los dos sin constancia'],rd.organico)+'</select></div>'+
-      '<div class="field"><label>¿De dónde saca inspiración para su contenido?</label>'+
-        '<div class="cg" id="rd-ins">'+
-          chip('Copia a la competencia',rd.inspiracion,'ins')+chip('Ve lo que le gusta en su feed',rd.inspiracion,'ins')+chip('Improvisa en el momento',rd.inspiracion,'ins')+chip('Sigue tendencias de TikTok/Reels',rd.inspiracion,'ins')+chip('Ideas de su industria',rd.inspiracion,'ins')+chip('No tiene proceso claro',rd.inspiracion,'ins')+
-        '</div></div>'+
-    '</div>'+
-    '<div class="slabel">Herramientas y bloqueos</div>'+
-    '<div class="card">'+
-      '<div class="field"><label>Herramientas que usa para crear contenido</label>'+
-        '<div class="cg" id="rd-her">'+
-          chip('Canva',rd.herramientas,'her')+chip('CapCut',rd.herramientas,'her')+chip('InShot',rd.herramientas,'her')+chip('ChatGPT / IA',rd.herramientas,'her')+chip('Instagram nativo',rd.herramientas,'her')+chip('Graba y publica directo',rd.herramientas,'her')+chip('Ninguna — improvisa',rd.herramientas,'her')+
-        '</div></div>'+
-      '<div class="field"><label>¿Qué ha intentado antes sin resultado?</label>'+
-        '<div class="cg" id="rd-int">'+
-          chip('Cursos de marketing o contenido',rd.intentos,'int')+chip('Copiar cuentas de su giro',rd.intentos,'int')+chip('Publicidad pagada (Meta Ads)',rd.intentos,'int')+chip('Publicar en grupos de Facebook',rd.intentos,'int')+chip('Contratar community manager',rd.intentos,'int')+chip('Ver videos de YouTube de tips',rd.intentos,'int')+
-        '</div></div>'+
-      '<div class="field"><label>¿Qué la limita hoy para crecer en redes?</label>'+
-        '<div class="cg" id="rd-lim">'+
-          chip('Falta de tiempo',rd.limites,'lim')+chip('No saber qué decir',rd.limites,'lim')+chip('Miedo a salir en cámara',rd.limites,'lim')+chip('Falta de estrategia',rd.limites,'lim')+chip('Falta de consistencia',rd.limites,'lim')+chip('No saber cómo diferenciarse',rd.limites,'lim')+chip('No ver resultados y desanimarse',rd.limites,'lim')+chip('Sin presupuesto para invertir',rd.limites,'lim')+
-        '</div></div>'+
-      '<div class="field"><label>Observaciones del perfil (si compartió pantalla)</label><textarea id="rd-obs" placeholder="Ej. Bio sin CTA, sin consistencia visual, no tiene highlights...">'+rd.observaciones+'</textarea></div>'+
-    '</div>'+
-    '<button class="btn-p" onclick="guardarRedes('+idx+')">Guardar diagnóstico de redes</button>'+
-    '<span id="msg-r" style="font-size:12px;color:#1D9E75;margin-left:10px;display:none">Guardado ✓</span>';
-
-  attachChipListeners();
-}
-
-function chip(label,selected,group){
-  var on=selected&&selected.indexOf(label)>-1?' on':'';
-  return '<button class="chip'+on+'" data-group="'+group+'" onclick="togR(this)">'+label+'</button>';
-}
-function opts(arr,val){
-  var h='<option value="">—</option>';
-  arr.forEach(function(o){h+='<option value="'+o+'"'+(val===o?' selected':'')+'>'+o+'</option>';});
-  return h;
-}
-
-var rGroups={rr:[],tc:[],ins:[],her:[],int:[],lim:[]};
-function attachChipListeners(){
-  rGroups={rr:[],tc:[],ins:[],her:[],int:[],lim:[]};
-  document.querySelectorAll('#redes-body .chip').forEach(function(c){
-    var g=c.dataset.group;
-    if(c.classList.contains('on')) rGroups[g].push(c.textContent.trim());
-  });
-}
-function togR(el){
-  el.classList.toggle('on');
-  var g=el.dataset.group;
-  var v=el.textContent.trim();
-  var i=rGroups[g].indexOf(v);
-  if(i>-1) rGroups[g].splice(i,1); else rGroups[g].push(v);
-}
-function guardarRedes(idx){
-  DB[idx].redes={
-    redes:rGroups.rr.slice(),principal:document.getElementById('rd-principal').value,
-    tipo:document.getElementById('rd-tipo').value,seguidores:document.getElementById('rd-seg').value,
-    frecuencia:document.getElementById('rd-frec').value,tipoContenido:rGroups.tc.slice(),
-    organico:document.getElementById('rd-org').value,inspiracion:rGroups.ins.slice(),
-    herramientas:rGroups.her.slice(),intentos:rGroups.int.slice(),limites:rGroups.lim.slice(),
-    observaciones:document.getElementById('rd-obs').value
-  };
-  var m=document.getElementById('msg-r');m.style.display='inline';
-  setTimeout(function(){m.style.display='none'},2500);
-}
-
-function renderPat(){
-  var el=document.getElementById('pat-content');
-  if(!DB.length){el.innerHTML='<div class="empty">Aún no hay sesiones guardadas.</div>';return;}
-  var cal=DB.filter(function(s){return s.temperatura==='Caliente'}).length;
-  var cp=DB.filter(function(s){return s.presupuesto==='Sí, definido'||s.presupuesto==='Sí, con duda'}).length;
-  var html='<div class="metrics"><div class="metric"><div class="metric-label">Sesiones</div><div class="metric-val">'+DB.length+'</div></div><div class="metric"><div class="metric-label">Calientes</div><div class="metric-val">'+cal+'</div></div><div class="metric"><div class="metric-label">Con presupuesto</div><div class="metric-val">'+cp+'</div></div></div>';
-  function barras(freq,titulo){
-    var s=Object.entries(freq).sort(function(a,b){return b[1]-a[1]});
-    var max=s.length?s[0][1]:1;
-    var h='<div class="slabel">'+titulo+'</div>';
-    s.slice(0,7).forEach(function(e){var p=Math.round(e[1]/max*100);h+='<div style="margin-bottom:7px"><div style="display:flex;justify-content:space-between;font-size:12px;color:var(--color-text-secondary)"><span>'+e[0]+'</span><span>'+e[1]+'x</span></div><div class="pbar"><div class="pfill" style="width:'+p+'%"></div></div></div>';});
-    return h;
-  }
-  var df={},lf={},inf={},obf={};
-  DB.forEach(function(s){
-    s.dolores.forEach(function(d){df[d]=(df[d]||0)+1;});
-    if(s.dolorTxt) df[s.dolorTxt]=(df[s.dolorTxt]||0)+1;
-    s.objeciones.forEach(function(o){obf[o]=(obf[o]||0)+1;});
-    if(s.redes){s.redes.limites.forEach(function(l){lf[l]=(lf[l]||0)+1;});s.redes.intentos.forEach(function(i){inf[i]=(inf[i]||0)+1;});}
-  });
-  html+=barras(df,'Dolores más frecuentes');
-  html+=barras(lf,'Lo que más las limita en redes');
-  var ins=DB.filter(function(s){return s.insight}).slice().reverse();
-  html+='<div class="slabel">Insights clave</div>';
-  html+=ins.length?ins.map(function(s){return '<div class="iitem"><div style="font-size:11px;color:var(--color-text-tertiary)">'+s.nombre+' · '+s.negocio+' · '+s.fecha+'</div><div style="font-size:13px;color:var(--color-text-primary);margin-top:3px;font-style:italic;line-height:1.5">"'+s.insight+'"</div></div>';}).join(''):'<div style="font-size:13px;color:var(--color-text-tertiary);margin-bottom:1rem">Sin insights aún.</div>';
-  html+='<div class="slabel">Objeciones frecuentes</div>';
-  var os=Object.entries(obf).sort(function(a,b){return b[1]-a[1]});
-  html+=os.length?os.map(function(e){return '<span class="tag to">'+e[0]+' ('+e[1]+'x)</span>';}).join(''):'<div style="font-size:13px;color:var(--color-text-tertiary)">Sin datos aún.</div>';
-  html+='<div class="slabel" style="margin-top:1rem">Ya intentaron sin resultado</div>';
-  var is=Object.entries(inf).sort(function(a,b){return b[1]-a[1]});
-  html+=is.length?is.map(function(e){return '<span class="tag td">'+e[0]+' ('+e[1]+'x)</span>';}).join(''):'<div style="font-size:13px;color:var(--color-text-tertiary)">Sin datos aún.</div>';
-  el.innerHTML=html;
-}
-
-function fillPSel(){
-  var sel=document.getElementById('p-sel');
-  sel.innerHTML='<option value="">— elige una —</option>';
-  DB.forEach(function(s,i){sel.innerHTML+='<option value="'+i+'">'+s.nombre+' · '+s.negocio+' · '+s.fecha+'</option>';});
-  document.getElementById('prop-output').innerHTML='';
-}
-
-function mostrarPropuesta(){
-  var idx=document.getElementById('p-sel').value;
-  if(idx===''){document.getElementById('prop-output').innerHTML='';return;}
-  var s=DB[parseInt(idx)];var r=s.redes;
-  var dH=(s.dolores.concat(s.dolorTxt?[s.dolorTxt]:[])).map(function(d){return '<span class="tag td">'+d+'</span>';}).join('');
-  var oH=s.objeciones.map(function(o){return '<span class="tag to">'+o+'</span>';}).join('');
-  var rH=r?r.redes.map(function(x){return '<span class="tag tr">'+x+'</span>';}).join(''):'';
-  var lH=r?r.limites.map(function(x){return '<span class="tag to">'+x+'</span>';}).join(''):'';
-  var iH=r?r.intentos.map(function(x){return '<span class="tag td">'+x+'</span>';}).join(''):'';
-  var html=
-    '<div class="pb"><div class="plabel">Para</div><div class="ptext" style="font-weight:500">'+s.nombre+(s.negocio?' — '+s.negocio:'')+(s.ciudad?' · '+s.ciudad:'')+'</div>'+(rH?'<div style="margin-top:4px">'+rH+'</div>':'')+'</div>'+
-    '<div class="pb"><div class="plabel">Situación actual</div><div class="ptext">Lleva '+(s.tiempo||'un tiempo')+' con su negocio. Consigue clientes por <strong>'+(s.clientes||'recomendación')+'</strong>. Claridad de avatar: <strong>'+(s.avatar||'no evaluado')+'</strong>. Propuesta de valor: <strong>'+(s.propuestaValor||'no evaluado')+'</strong>.</div></div>'+
-    (r?'<div class="pb"><div class="plabel">Diagnóstico de redes</div><div class="ptext">Red principal: <strong>'+(r.principal||'—')+'</strong> · '+r.seguidores+' seguidores · '+r.frecuencia+'. Contenido: '+(r.tipoContenido.join(', ')||'—')+'. '+r.organico+'.'+(r.observaciones?'<br><em>'+r.observaciones+'</em>':'')+'</div></div>':'')+
-    (dH?'<div class="pb"><div class="plabel">Dolores identificados</div><div>'+dH+'</div></div>':'')+
-    (iH?'<div class="pb"><div class="plabel">Ya intentó sin resultado</div><div>'+iH+'</div></div>':'')+
-    (lH?'<div class="pb"><div class="plabel">Lo que la limita hoy</div><div>'+lH+'</div></div>':'')+
-    (s.insight?'<div class="pb"><div class="plabel">Insight clave</div><div class="ptext" style="font-style:italic">"'+s.insight+'"</div></div>':'')+
-    '<div class="pb"><div class="plabel">Meta declarada</div><div class="ptext">'+(s.meta||'No especificada')+'</div></div>'+
-    '<div class="pb"><div class="plabel">Oferta recomendada</div><div class="ptext">Asesoría estratégica 1:1: posicionamiento + cliente ideal + plan de contenido mensual. Resultado concreto en 30 días. Puerta de entrada al Bootcamp ANDI.</div></div>'+
-    (oH?'<div class="pb"><div class="plabel">Objeciones a atender</div><div>'+oH+'</div></div>':'');
-  document.getElementById('prop-output').innerHTML=html;
-}
-
-function renderCont(){
-  var el=document.getElementById('cont-output');
-  var btn=document.getElementById('cont-btn');
-  if(!DB.length){el.innerHTML='<div class="empty">Guarda al menos una sesión para ver ideas de contenido.</div>';btn.style.display='none';return;}
-  btn.style.display='inline-block';
-  var df={};
-  DB.forEach(function(s){s.dolores.forEach(function(d){df[d]=(df[d]||0)+1;});if(s.dolorTxt)df[s.dolorTxt]=(df[s.dolorTxt]||0)+1;});
-  var top=Object.entries(df).sort(function(a,b){return b[1]-a[1]}).slice(0,5);
-  var ideas=[
-    {fmt:'Reel',tipo:'Gancho de dolor',txt:'¿Publicas todos los días y no ves ventas? Esto es lo que falta.',p:0},
-    {fmt:'Carrusel',tipo:'Educativo',txt:'3 razones por las que vivir solo de recomendación limita tu negocio.',p:3},
-    {fmt:'Story',tipo:'Caso real',txt:'Esto me dijo una clienta antes de trabajar conmigo...',p:null},
-    {fmt:'Reel',tipo:'Posicionamiento',txt:'No bajes tus precios. Haz esto en cambio.',p:2},
-    {fmt:'Carrusel',tipo:'Objeción frecuente',txt:'Ya tomé cursos y no me funcionó — aquí está la diferencia.',p:null},
-    {fmt:'Reel',tipo:'Avatar',txt:'Si eres mamá con negocio y sientes que tu contenido no te refleja, este video es para ti.',p:1},
-    {fmt:'Carrusel',tipo:'Autoridad',txt:'Lo que aprendí después de acompañar a decenas de emprendedoras en redes.',p:null},
-  ];
-  el.innerHTML=ideas.map(function(idea){
-    var dt=idea.p!==null&&top[idea.p]?'<span class="tag td">'+top[idea.p][0]+'</span>':'<span class="tag ti">Autoridad</span>';
-    return '<div class="card"><div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px"><div style="font-size:13px;font-weight:500;color:var(--color-text-primary);line-height:1.5">'+idea.txt+'</div><span style="font-size:11px;background:var(--color-background-secondary);padding:3px 8px;border-radius:10px;color:var(--color-text-tertiary);white-space:nowrap;flex-shrink:0">'+idea.fmt+'</span></div><div style="margin-top:5px">'+dt+'<span class="tag tm">'+idea.tipo+'</span></div></div>';
-  }).join('');
-}
-</script>
-</body>
-</html>
+    <button class="tab" onclick="goTab('t-contenido',this)">Contenido</
