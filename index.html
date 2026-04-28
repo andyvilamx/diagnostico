@@ -4,270 +4,638 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Sistema Diagnóstico ANDI | Andy Vila</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=DM+Serif+Display&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
-    --primary: #534AB7;
-    --primary-light: #EEEDFE;
-    --secondary: #3C3489;
-    --accent: #D85A30;
-    --color-background-primary: #ffffff;
-    --color-background-secondary: #f5f4f0;
-    --color-text-primary: #1a1a18;
-    --color-text-secondary: #5f5e5a;
-    --color-text-tertiary: #888780;
-    --color-border-tertiary: rgba(0,0,0,0.12);
-    --color-border-secondary: rgba(0,0,0,0.2);
-    --color-border-primary: rgba(0,0,0,0.32);
-    --border-radius-md: 8px;
-    --border-radius-lg: 12px;
-  }
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --color-background-primary: #1e1e1c;
-      --color-background-secondary: #2a2a27;
-      --color-text-primary: #e8e6df;
-      --color-text-secondary: #a8a69f;
-      --color-text-tertiary: #6e6d68;
-      --color-border-tertiary: rgba(255,255,255,0.1);
-      --color-border-secondary: rgba(255,255,255,0.18);
-      --color-border-primary: rgba(255,255,255,0.28);
-    }
-  }
-  *{box-sizing:border-box;margin:0;padding:0}
-  body{font-family:var(--font-sans);background:var(--color-background-primary);color:var(--color-text-primary);padding:1.5rem;max-width:740px;margin:0 auto}
-  .app{padding:1rem 0;max-width:700px}
-  
-  header { margin-bottom: 1.5rem; border-bottom: 1px solid var(--color-border-tertiary); padding-bottom: 1rem; }
-  header h1 { font-size: 22px; color: var(--primary); font-weight: 600; }
-  header p { font-size: 13px; color: var(--color-text-secondary); }
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --pu:#534AB7;--pu-l:#EEEDFE;--pu-d:#26215C;--pu-m:#AFA9EC;
+  --te:#1D9E75;--te-l:#E1F5EE;--te-d:#04342C;
+  --co:#D85A30;--co-l:#FAECE7;--co-d:#4A1B0C;
+  --am:#BA7517;--am-l:#FAEEDA;--am-d:#412402;
+  --bg:#FAF9F6;--bg2:#F1EFE8;--bg3:#fff;
+  --txt:#1a1a18;--txt2:#5f5e5a;--txt3:#888780;
+  --bdr:rgba(0,0,0,0.1);--bdr2:rgba(0,0,0,0.18);
+  --rad:10px;--rad-lg:14px;
+}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--txt);min-height:100vh}
 
-  .tabs{display:flex;gap:5px;margin-bottom:1.5rem;flex-wrap:wrap}
-  .tab{padding:6px 13px;border-radius:20px;border:0.5px solid var(--color-border-secondary);background:transparent;font-size:12px;color:var(--color-text-secondary);cursor:pointer;transition:all .15s}
-  .tab.active{background:var(--color-background-secondary);color:var(--color-text-primary);font-weight:500;border-color:var(--color-border-primary)}
-  
-  .screen{display:none}.screen.active{display:block}
-  .slabel{font-size:11px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--color-text-tertiary);margin-bottom:8px;margin-top:1.1rem}
-  .slabel:first-child{margin-top:0}
-  
-  .card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:12px;padding:.9rem 1.1rem;margin-bottom:10px; box-shadow: 0 2px 4px rgba(0,0,0,0.02);}
-  input[type=text],textarea,select{width:100%;font-size:13px;padding:7px 10px;border:0.5px solid var(--color-border-secondary);border-radius:8px;background:var(--color-background-primary);color:var(--color-text-primary);font-family:var(--font-sans);margin-top:3px}
-  textarea{resize:vertical;min-height:56px;line-height:1.5}
-  
-  .field{margin-bottom:10px}
-  .field label{font-size:12px;color:var(--color-text-secondary)}
-  .row2{display:flex;gap:10px}.row2 .field{flex:1}
-  
-  .cg{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}
-  .chip{padding:4px 11px;border-radius:20px;border:0.5px solid var(--color-border-secondary);font-size:11px;color:var(--color-text-secondary);cursor:pointer;background:var(--color-background-primary);transition:all .15s}
-  .chip.on{background:var(--primary-light);border-color:var(--primary);color:var(--secondary)}
-  
-  .btn-p{padding:10px 20px;background:var(--primary);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;width:100%;}
-  .btn-s{padding:7px 14px;background:transparent;color:var(--color-text-primary);border:0.5px solid var(--color-border-secondary);border-radius:8px;font-size:12px;cursor:pointer;margin-top:8px}
-  
-  .metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:1.1rem}
-  .metric{background:var(--color-background-secondary);border-radius:8px;padding:10px 12px; border-left: 3px solid var(--primary);}
-  .metric-label{font-size:10px;color:var(--color-text-tertiary);text-transform:uppercase;}
-  .metric-val{font-size:20px;font-weight:600;color:var(--color-text-primary)}
-  
-  .tag{display:inline-block;padding:3px 9px;border-radius:12px;font-size:10px;font-weight:500;margin:2px}
-  .td{background:#FAECE7;color:#712B13} /* Dolor */
-  .tm{background:#EEEDFE;color:#3C3489} /* Meta */
-  .to{background:#FAEEDA;color:#633806} /* Objeción */
-  .ti{background:#E1F5EE;color:#085041} /* Insight */
-  
-  .pbar{height:6px;background:var(--color-background-secondary);border-radius:4px;overflow:hidden;margin-top:3px}
-  .pfill{height:100%;background:var(--accent);transition:width .4s}
-  
-  .iitem{border-left:3px solid var(--primary);padding:7px 11px;margin-bottom:7px;background:var(--color-background-secondary);border-radius:0 8px 8px 0}
-  .pb{background:var(--primary-light);border-radius:12px;padding:.85rem 1rem;margin-bottom:9px}
-  .plabel{font-size:10px;font-weight:600;color:var(--primary);text-transform:uppercase;margin-bottom:3px}
-  .ptext{font-size:13px;color:#26215C;line-height:1.5}
-  .empty{text-align:center;padding:2rem;color:var(--color-text-tertiary);font-size:13px}
+/* HEADER */
+.header{background:var(--bg3);border-bottom:1px solid var(--bdr);padding:1rem 1.5rem;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.logo{display:flex;align-items:center;gap:10px}
+.logo-mark{width:32px;height:32px;background:var(--pu);border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:600;font-size:13px;letter-spacing:.05em}
+.logo-text{font-family:'DM Serif Display',serif;font-size:17px;color:var(--txt)}
+.logo-sub{font-size:11px;color:var(--txt3);margin-top:1px}
+.header-right{font-size:12px;color:var(--txt3)}
+
+/* NAV */
+.nav-wrap{background:var(--bg3);border-bottom:1px solid var(--bdr);padding:0 1.5rem;overflow-x:auto}
+.nav{display:flex;gap:0;white-space:nowrap}
+.nav-btn{padding:12px 16px;border:none;background:transparent;font-size:13px;font-family:'DM Sans',sans-serif;color:var(--txt3);cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;font-weight:400}
+.nav-btn:hover{color:var(--txt)}
+.nav-btn.on{color:var(--pu);border-bottom-color:var(--pu);font-weight:500}
+
+/* MAIN */
+.main{max-width:680px;margin:0 auto;padding:1.5rem 1rem 4rem}
+.screen{display:none}.screen.on{display:block}
+
+.page-title{font-family:'DM Serif Display',serif;font-size:22px;color:var(--txt);margin-bottom:4px}
+.page-sub{font-size:13px;color:var(--txt2);margin-bottom:1.5rem;line-height:1.5}
+
+/* CARDS */
+.card{background:var(--bg3);border:1px solid var(--bdr);border-radius:var(--rad-lg);padding:1rem 1.25rem;margin-bottom:12px}
+.hl{background:var(--pu-l);border-radius:var(--rad-lg);padding:1rem 1.25rem;margin-bottom:12px}
+.hl-label{font-size:10px;font-weight:600;color:var(--pu);text-transform:uppercase;letter-spacing:.07em;margin-bottom:5px}
+.hl-text{font-size:13px;color:var(--pu-d);line-height:1.7}
+.ok{background:var(--te-l);border-radius:var(--rad-lg);padding:1rem 1.25rem;margin-bottom:12px}
+.ok-label{font-size:10px;font-weight:600;color:var(--te);text-transform:uppercase;letter-spacing:.07em;margin-bottom:5px}
+.ok-text{font-size:13px;color:var(--te-d);line-height:1.7;white-space:pre-wrap}
+.warn{background:var(--co-l);border-radius:var(--rad-lg);padding:1rem 1.25rem;margin-bottom:12px}
+.warn-label{font-size:10px;font-weight:600;color:var(--co);text-transform:uppercase;letter-spacing:.07em;margin-bottom:5px}
+.warn-text{font-size:13px;color:var(--co-d);line-height:1.7}
+
+/* FORM */
+.fsec{margin-bottom:1.25rem}
+.fsec-title{font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--pu);margin-bottom:.75rem;display:flex;align-items:center;gap:8px}
+.fsec-title::after{content:'';flex:1;height:1px;background:var(--bdr)}
+.field{margin-bottom:10px}
+.field label{font-size:12px;color:var(--txt2);display:block;margin-bottom:3px;font-weight:500}
+.field label .req{color:var(--co)}
+input[type=text],textarea,select{width:100%;font-size:13px;padding:9px 12px;border:1px solid var(--bdr2);border-radius:var(--rad);background:#fff;color:var(--txt);font-family:'DM Sans',sans-serif;transition:border-color .15s;-webkit-appearance:none}
+input[type=text]:focus,textarea:focus,select:focus{outline:none;border-color:var(--pu);box-shadow:0 0 0 3px rgba(83,74,183,.1)}
+textarea{resize:vertical;min-height:68px;line-height:1.5}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:480px){.row2{grid-template-columns:1fr}}
+
+/* CHIPS */
+.chip-group{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}
+.chip{padding:5px 12px;border-radius:20px;border:1px solid var(--bdr2);font-size:12px;color:var(--txt2);cursor:pointer;background:#fff;transition:all .15s;font-family:'DM Sans',sans-serif;user-select:none}
+.chip:hover{border-color:var(--pu);color:var(--pu)}
+.chip.on{background:var(--pu-l);border-color:var(--pu);color:var(--pu-d);font-weight:500}
+
+/* BUTTONS */
+.btn-main{padding:10px 24px;background:var(--pu);color:#fff;border:none;border-radius:var(--rad);font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s}
+.btn-main:hover{background:var(--pu-d)}
+.btn-main:disabled{opacity:.5;cursor:not-allowed}
+.btn-sec{padding:9px 18px;background:transparent;color:var(--txt);border:1px solid var(--bdr2);border-radius:var(--rad);font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s}
+.btn-sec:hover{border-color:var(--pu);color:var(--pu)}
+.btn-ia{padding:8px 16px;background:var(--pu-l);color:var(--pu-d);border:1px solid var(--pu-m);border-radius:var(--rad);font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:500;transition:all .15s}
+.btn-ia:hover{background:var(--pu);color:#fff}
+
+/* TAGS */
+.tag{display:inline-block;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:500;margin:2px}
+.t-p{background:var(--pu-l);color:var(--pu-d)}
+.t-d{background:var(--co-l);color:#712B13}
+.t-o{background:var(--te-l);color:#085041}
+.t-a{background:var(--am-l);color:#633806}
+
+/* METRICS */
+.metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:1.25rem}
+.metric{background:var(--bg2);border-radius:var(--rad);padding:12px 14px}
+.metric-label{font-size:11px;color:var(--txt3);margin-bottom:3px}
+.metric-val{font-size:22px;font-weight:600;color:var(--txt)}
+
+/* PBAR */
+.pbar{height:6px;background:var(--bg2);border-radius:3px;overflow:hidden;margin-top:3px}
+.pfill{height:100%;border-radius:3px;background:var(--co);transition:width .5s}
+
+/* CLIENT CARDS */
+.client-card{background:#fff;border:1px solid var(--bdr);border-radius:var(--rad-lg);padding:1rem 1.25rem;margin-bottom:8px;cursor:pointer;transition:all .15s}
+.client-card:hover{border-color:var(--pu);box-shadow:0 2px 12px rgba(83,74,183,.08)}
+.client-name{font-size:15px;font-weight:500;color:var(--txt);margin-bottom:2px}
+.client-meta{font-size:12px;color:var(--txt3)}
+.temp-badge{display:inline-block;padding:2px 9px;border-radius:10px;font-size:11px;font-weight:500;margin-left:6px;vertical-align:middle}
+.temp-c{background:var(--te-l);color:#085041}
+.temp-t{background:var(--am-l);color:#633806}
+.temp-f{background:#E6F1FB;color:#0C447C}
+
+/* LOADING */
+.loading{display:flex;align-items:center;gap:8px;color:var(--txt3);font-size:13px;padding:1rem 0}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--pu);animation:blink 1.2s ease-in-out infinite}
+.dot:nth-child(2){animation-delay:.2s}.dot:nth-child(3){animation-delay:.4s}
+@keyframes blink{0%,100%{opacity:.25;transform:scale(.75)}50%{opacity:1;transform:scale(1)}}
+
+/* MISC */
+.empty{text-align:center;padding:2.5rem 1rem;color:var(--txt3);font-size:13px}
+.divider{border:none;border-top:1px solid var(--bdr);margin:.75rem 0}
+.back-btn{font-size:12px;color:var(--pu);cursor:pointer;margin-bottom:1.25rem;display:inline-flex;align-items:center;gap:4px;font-weight:500}
+.back-btn:hover{text-decoration:underline}
+.iitem{border-left:3px solid var(--pu);padding:8px 12px;margin-bottom:8px;background:var(--bg2);border-radius:0 8px 8px 0}
+.save-msg{font-size:12px;color:var(--te);margin-left:10px;display:none}
 </style>
 </head>
 <body>
 
-<div class="app">
-  <header>
-    <h1>Andy Vila</h1>
-    <p>Sistema Diagnóstico A.N.D.I. | Marketing para Mamás</p>
-  </header>
-
-  <div class="tabs">
-    <button class="tab active" onclick="goTab('t-general',this)">Captura</button>
-    <button class="tab" onclick="goTab('t-redes',this)">Redes sociales</button>
-    <button class="tab" onclick="goTab('t-patrones',this)">Patrones</button>
-    <button class="tab" onclick="goTab('t-propuesta',this)">Propuesta</button>
-    <button class="tab" onclick="goTab('t-contenido',this)">Contenido</button>
-  </div>
-
-  <div id="t-general" class="screen active">
-    <div class="slabel">Información del Prospecto</div>
-    <div class="card">
-      <div class="row2">
-        <div class="field"><label>Nombre</label><input type="text" id="g-nombre" placeholder="Ej. Amelia Díaz"></div>
-        <div class="field"><label>Negocio</label><input type="text" id="g-negocio" placeholder="Ej. Florería"></div>
-      </div>
-      <div class="field"><label>¿Cómo consigue clientes hoy?</label><input type="text" id="g-clientes" placeholder="Ej. Recomendación"></div>
-      <div class="field"><label>Objetivo en 3-6 meses</label><input type="text" id="g-meta" placeholder="Ej. Escalar ventas"></div>
-    </div>
-
-    <div class="slabel">Dolores (Selección rápida)</div>
-    <div class="card">
-      <div class="cg" id="dolores-container">
-        <button class="chip" onclick="tog(this,'dolor')">No sabe qué publicar</button>
-        <button class="chip" onclick="tog(this,'dolor')">Publica y no vende</button>
-        <button class="chip" onclick="tog(this,'dolor')">Baja precios para competir</button>
-        <button class="chip" onclick="tog(this,'dolor')">Esclava de su negocio</button>
-        <button class="chip" onclick="tog(this,'dolor')">Miedo a la cámara</button>
-        <button class="chip" onclick="tog(this,'dolor')">Sin constancia</button>
-      </div>
-      <div class="field" style="margin-top:10px"><label>Frase literal (Dolor exacto)</label><textarea id="g-dolor-txt"></textarea></div>
-    </div>
-
-    <button class="btn-p" onclick="guardar()">Guardar Sesión</button>
-    <div id="msg-g" style="display:none; color: green; font-size: 12px; margin-top: 10px; text-align: center;">✓ Sesión guardada localmente</div>
-  </div>
-
-  <div id="t-redes" class="screen">
-    <div class="slabel">Diagnóstico de Presencia</div>
-    <div id="redes-content">
-        <div class="empty">Primero guarda una sesión en la pestaña de Captura.</div>
+<div class="header">
+  <div class="logo">
+    <div class="logo-mark">A</div>
+    <div>
+      <div class="logo-text">Andy Vila</div>
+      <div class="logo-sub">Sistema Diagnóstico ANDI</div>
     </div>
   </div>
+  <div class="header-right" id="header-count"></div>
+</div>
 
-  <div id="t-patrones" class="screen">
-    <div id="pat-content"><div class="empty">Captura sesiones para ver el análisis de tu avatar.</div></div>
-  </div>
-
-  <div id="t-propuesta" class="screen">
-    <div class="slabel">Estrategia para</div>
-    <select id="p-sel" onchange="mostrarPropuesta()" style="margin-bottom: 15px;"><option value="">— Selecciona sesión —</option></select>
-    <div id="prop-output"></div>
-  </div>
-
-  <div id="t-contenido" class="screen">
-    <div class="slabel">Ganchos basados en datos</div>
-    <div id="cont-output"></div>
+<div class="nav-wrap">
+  <div class="nav">
+    <button class="nav-btn on" onclick="goNav('n-form',this)">Nueva clienta</button>
+    <button class="nav-btn" onclick="goNav('n-repo',this)">Repositorio</button>
+    <button class="nav-btn" onclick="goNav('n-patron',this)">Patrones</button>
+    <button class="nav-btn" onclick="goNav('n-sesion',this)">Para la sesión</button>
   </div>
 </div>
 
+<div class="main">
+
+<!-- NUEVA CLIENTA -->
+<div id="n-form" class="screen on">
+  <div class="page-title">Brief de onboarding</div>
+  <div class="page-sub">Llena este formulario durante o después de tu sesión diagnóstico. La IA analizará el perfil automáticamente al guardar.</div>
+
+  <div class="fsec">
+    <div class="fsec-title">Datos generales</div>
+    <div class="row2">
+      <div class="field"><label>Nombre <span class="req">*</span></label><input type="text" id="f-nombre" placeholder="Ej. Amelia Díaz"></div>
+      <div class="field"><label>Tipo de negocio <span class="req">*</span></label><input type="text" id="f-negocio" placeholder="Ej. Cabina de belleza"></div>
+    </div>
+    <div class="row2">
+      <div class="field"><label>Ciudad</label><input type="text" id="f-ciudad" placeholder="Ej. Querétaro"></div>
+      <div class="field"><label>Antigüedad en el negocio</label>
+        <select id="f-tiempo"><option value="">—</option><option>Menos de 1 año</option><option>1–2 años</option><option>2–5 años</option><option>Más de 5 años</option></select>
+      </div>
+    </div>
+    <div class="field"><label>Contexto personal relevante</label><input type="text" id="f-contexto" placeholder="Ej. Mamá divorciada, trabaja desde casa, viaje planeado"></div>
+  </div>
+
+  <div class="fsec">
+    <div class="fsec-title">Servicios y modelo de negocio</div>
+    <div class="field"><label>¿Qué ofrece exactamente? (servicios y precios si los mencionó) <span class="req">*</span></label><textarea id="f-servicios" placeholder="Ej. Masajes reductivos $X / Paquete 5 sesiones $Y / Facial $Z"></textarea></div>
+    <div class="row2">
+      <div class="field"><label>Modelo de venta</label>
+        <select id="f-modelo"><option value="">—</option><option>Sesión única</option><option>Paquetes</option><option>Suscripción mensual</option><option>Mixto</option></select>
+      </div>
+      <div class="field"><label>Rango de precio promedio</label>
+        <select id="f-precio"><option value="">—</option><option>No mencionó</option><option>Menos de $500</option><option>$500–$1,000</option><option>$1,000–$2,500</option><option>$2,500–$5,000</option><option>Más de $5,000</option></select>
+      </div>
+    </div>
+    <div class="row2">
+      <div class="field"><label>Clientes atendidos por semana</label><input type="text" id="f-cls" placeholder="Ej. 15"></div>
+      <div class="field"><label>Clientes nuevos por mes</label><input type="text" id="f-clm" placeholder="Ej. 3–4"></div>
+    </div>
+    <div class="field"><label>¿Cómo consigue clientes hoy? <span class="req">*</span></label><input type="text" id="f-como" placeholder="Ej. Solo recomendación, flyers en grupos de WhatsApp"></div>
+    <div class="field"><label>¿Usa descuentos o promociones para vender?</label>
+      <select id="f-desc"><option value="">—</option><option>Sí, frecuentemente</option><option>A veces</option><option>Rara vez</option><option>No</option></select>
+    </div>
+  </div>
+
+  <div class="fsec">
+    <div class="fsec-title">Claridad de negocio y diferencial</div>
+    <div class="row2">
+      <div class="field"><label>¿Sabe a quién le habla?</label>
+        <select id="f-avatar"><option value="">—</option><option>Sí, muy claro</option><option>Más o menos</option><option>No tiene claridad</option></select>
+      </div>
+      <div class="field"><label>¿Tiene servicio estrella?</label>
+        <select id="f-estrella"><option value="">—</option><option>Sí, claro</option><option>Varios sin foco</option><option>No lo tiene claro</option></select>
+      </div>
+    </div>
+    <div class="field"><label>¿Cuál es su diferencial real?</label><textarea id="f-dif" placeholder="Ej. Aparatología española exclusiva en QRO, certificaciones holísticas, conexión genuina con clientas"></textarea></div>
+    <div class="field"><label>Testimonios o resultados concretos que mencionó</label><textarea id="f-test" placeholder="Ej. Clientas que llevan años con ella, resultados visibles en pocas sesiones"></textarea></div>
+  </div>
+
+  <div class="fsec">
+    <div class="fsec-title">Presencia en redes sociales</div>
+    <div class="field"><label>Redes que usa actualmente</label>
+      <div class="chip-group">
+        <button class="chip" onclick="tog(this,'redes')">Instagram</button>
+        <button class="chip" onclick="tog(this,'redes')">Facebook personal</button>
+        <button class="chip" onclick="tog(this,'redes')">Página de Facebook</button>
+        <button class="chip" onclick="tog(this,'redes')">TikTok</button>
+        <button class="chip" onclick="tog(this,'redes')">WhatsApp Business</button>
+        <button class="chip" onclick="tog(this,'redes')">Ninguna activa</button>
+      </div>
+    </div>
+    <div class="field"><label>Usuarios o links + datos del perfil</label><input type="text" id="f-users" placeholder="Ej. FB: /amelia.diaz (577 amigos, 2300 publicaciones)"></div>
+    <div class="row2">
+      <div class="field"><label>Frecuencia de publicación</label>
+        <select id="f-frec"><option value="">—</option><option>Todos los días</option><option>3–4 veces/semana</option><option>1–2 veces/semana</option><option>Sin orden fijo</option><option>Casi no publica</option></select>
+      </div>
+      <div class="field"><label>Tipo de contenido que publica</label>
+        <select id="f-ctipo"><option value="">—</option><option>Promociones y descuentos</option><option>Fotos de servicios</option><option>Antes y después</option><option>Vida personal</option><option>Mixto sin estrategia</option><option>Casi no publica</option></select>
+      </div>
+    </div>
+    <div class="field"><label>Herramientas para crear contenido</label>
+      <div class="chip-group">
+        <button class="chip" onclick="tog(this,'herr')">Canva</button>
+        <button class="chip" onclick="tog(this,'herr')">CapCut</button>
+        <button class="chip" onclick="tog(this,'herr')">InShot</button>
+        <button class="chip" onclick="tog(this,'herr')">ChatGPT / IA</button>
+        <button class="chip" onclick="tog(this,'herr')">Solo el celular</button>
+        <button class="chip" onclick="tog(this,'herr')">Ninguna</button>
+      </div>
+    </div>
+    <div class="field"><label>Tiempo disponible para redes por semana</label>
+      <select id="f-tredes"><option value="">—</option><option>Menos de 1 hora</option><option>1–2 horas</option><option>3–4 horas</option><option>Más de 4 horas</option></select>
+    </div>
+    <div class="field"><label>¿Qué ha intentado antes sin resultado?</label>
+      <div class="chip-group">
+        <button class="chip" onclick="tog(this,'intent')">Cursos de contenido</button>
+        <button class="chip" onclick="tog(this,'intent')">Copiar a la competencia</button>
+        <button class="chip" onclick="tog(this,'intent')">Meta Ads pagados</button>
+        <button class="chip" onclick="tog(this,'intent')">Grupos de Facebook</button>
+        <button class="chip" onclick="tog(this,'intent')">Community manager</button>
+        <button class="chip" onclick="tog(this,'intent')">Videos de YouTube</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="fsec">
+    <div class="fsec-title">Metas, dolores y calificación</div>
+    <div class="field"><label>Meta principal en 3 meses <span class="req">*</span></label><input type="text" id="f-meta" placeholder="Ej. Aumentar clientes nuevos para aparatología y trajes"></div>
+    <div class="field"><label>Mayor dolor en sus palabras exactas</label><textarea id="f-dolor" placeholder="Escribe exactamente lo que dijo — estas frases son oro para tu contenido"></textarea></div>
+    <div class="field"><label>Insight clave de la sesión</label><textarea id="f-insight" placeholder="La idea más reveladora que salió de la conversación"></textarea></div>
+    <div class="row2">
+      <div class="field"><label>Temperatura del lead</label>
+        <select id="f-temp"><option value="">—</option><option>Caliente</option><option>Tibio</option><option>Frío</option></select>
+      </div>
+      <div class="field"><label>¿Tiene presupuesto?</label>
+        <select id="f-pres"><option value="">—</option><option>Sí, definido</option><option>Sí, con duda</option><option>No por ahora</option><option>No lo mencionó</option></select>
+      </div>
+    </div>
+    <div class="field"><label>Dolores identificados</label>
+      <div class="chip-group">
+        <button class="chip" onclick="tog(this,'dolores')">No sabe qué publicar</button>
+        <button class="chip" onclick="tog(this,'dolores')">Publica y no vende</button>
+        <button class="chip" onclick="tog(this,'dolores')">Baja precios para competir</button>
+        <button class="chip" onclick="tog(this,'dolores')">Solo vive de recomendación</button>
+        <button class="chip" onclick="tog(this,'dolores')">Sin tiempo para redes</button>
+        <button class="chip" onclick="tog(this,'dolores')">No sabe comunicar su valor</button>
+        <button class="chip" onclick="tog(this,'dolores')">Se siente invisible</button>
+        <button class="chip" onclick="tog(this,'dolores')">No se diferencia</button>
+        <button class="chip" onclick="tog(this,'dolores')">Agotada de crear contenido</button>
+        <button class="chip" onclick="tog(this,'dolores')">Publica sin planificación</button>
+      </div>
+    </div>
+    <div class="field"><label>Objeciones que mencionó</label>
+      <div class="chip-group">
+        <button class="chip" onclick="tog(this,'objs')">No tengo tiempo</button>
+        <button class="chip" onclick="tog(this,'objs')">No tengo presupuesto</button>
+        <button class="chip" onclick="tog(this,'objs')">Ya lo intenté sola</button>
+        <button class="chip" onclick="tog(this,'objs')">No sé si funcione</button>
+        <button class="chip" onclick="tog(this,'objs')">Tengo que pensarlo</button>
+      </div>
+    </div>
+  </div>
+
+  <div style="display:flex;align-items:center;flex-wrap:wrap;gap:10px;margin-top:4px">
+    <button class="btn-main" id="btn-save" onclick="guardar()">Guardar y analizar con IA</button>
+    <span class="save-msg" id="msg-ok">Guardado y analizado ✓</span>
+  </div>
+</div>
+
+<!-- REPOSITORIO -->
+<div id="n-repo" class="screen">
+  <div id="repo-list">
+    <div class="page-title">Repositorio de clientas</div>
+    <div class="page-sub">Historial completo de todas tus sesiones. Toca una tarjeta para ver el perfil completo y el análisis de IA.</div>
+    <div id="repo-content"><div class="empty">Aún no hay clientas guardadas.<br>Empieza con "Nueva clienta".</div></div>
+  </div>
+  <div id="repo-detail" style="display:none">
+    <span class="back-btn" onclick="backRepo()">← Volver al repositorio</span>
+    <div id="detail-content"></div>
+  </div>
+</div>
+
+<!-- PATRONES -->
+<div id="n-patron" class="screen">
+  <div class="page-title">Patrones de tu avatar</div>
+  <div class="page-sub">Tu investigación de mercado en tiempo real. Se actualiza sola con cada sesión que capturas.</div>
+  <div id="patron-content"><div class="empty">Guarda al menos una sesión para ver patrones.</div></div>
+</div>
+
+<!-- PARA LA SESIÓN -->
+<div id="n-sesion" class="screen">
+  <div class="page-title">Preparación para sesión</div>
+  <div class="page-sub">Selecciona una clienta y revisa su resumen estratégico antes de cada sesión. Genera un análisis fresco con IA cuando lo necesites.</div>
+  <div class="card">
+    <div class="field"><label>Selecciona la clienta</label>
+      <select id="ses-sel" onchange="cargarSesion()"><option value="">— elige una —</option></select>
+    </div>
+  </div>
+  <div id="ses-output"></div>
+</div>
+
+</div><!-- /main -->
+
 <script>
-// Base de datos local
-let DB = JSON.parse(localStorage.getItem('andi_db')) || [];
-let selDolores = [];
+var DB=[];
+var SEL={redes:[],herr:[],intent:[],dolores:[],objs:[]};
 
-function goTab(id, btn) {
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  btn.classList.add('active');
-  document.getElementById(id).classList.add('active');
-  if(id==='t-patrones') renderPat();
-  if(id==='t-propuesta') fillPSel();
-  if(id==='t-contenido') renderCont();
+// STORAGE
+function saveDB(){try{localStorage.setItem('andi-crm-v2',JSON.stringify(DB));}catch(e){}}
+function loadDB(){try{var d=localStorage.getItem('andi-crm-v2');if(d)DB=JSON.parse(d);}catch(e){DB=[];}}
+loadDB();
+updateHeaderCount();
+
+function updateHeaderCount(){
+  var el=document.getElementById('header-count');
+  if(el) el.textContent=DB.length>0?DB.length+' clienta'+(DB.length!==1?'s':''):'';
 }
 
-function tog(el, type) {
+// NAV
+function goNav(id,btn){
+  document.querySelectorAll('.nav-btn').forEach(function(b){b.classList.remove('on')});
+  document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('on')});
+  btn.classList.add('on');
+  document.getElementById(id).classList.add('on');
+  if(id==='n-repo'){renderRepo();}
+  if(id==='n-patron'){renderPatron();}
+  if(id==='n-sesion'){fillSesSel();}
+}
+
+// CHIPS
+function tog(el,group){
   el.classList.toggle('on');
-  let val = el.textContent;
-  if(el.classList.contains('on')) selDolores.push(val);
-  else selDolores = selDolores.filter(d => d !== val);
+  var v=el.textContent.trim();
+  var i=SEL[group].indexOf(v);
+  if(i>-1) SEL[group].splice(i,1); else SEL[group].push(v);
 }
 
-function guardar() {
-  let nombre = document.getElementById('g-nombre').value;
-  if(!nombre) return alert("Ingresa el nombre");
-  
-  let s = {
-    id: Date.now(),
-    nombre,
-    negocio: document.getElementById('g-negocio').value,
-    clientes: document.getElementById('g-clientes').value,
-    meta: document.getElementById('g-meta').value,
-    dolores: [...selDolores],
-    dolorTxt: document.getElementById('g-dolor-txt').value,
-    fecha: new Date().toLocaleDateString()
+function gv(id){var el=document.getElementById(id);return el?el.value.trim():'';}
+
+// GUARDAR
+async function guardar(){
+  var nombre=gv('f-nombre');
+  if(!nombre){alert('Agrega el nombre de la clienta');return;}
+  var btn=document.getElementById('btn-save');
+  btn.disabled=true;btn.textContent='Analizando con IA...';
+
+  var s={
+    id:Date.now(),
+    fecha:new Date().toLocaleDateString('es-MX'),
+    nombre:nombre,
+    negocio:gv('f-negocio'),
+    ciudad:gv('f-ciudad'),
+    tiempo:gv('f-tiempo'),
+    contexto:gv('f-contexto'),
+    servicios:gv('f-servicios'),
+    modelo:gv('f-modelo'),
+    precio:gv('f-precio'),
+    clientesSem:gv('f-cls'),
+    clientesMes:gv('f-clm'),
+    como:gv('f-como'),
+    descuentos:gv('f-desc'),
+    avatar:gv('f-avatar'),
+    estrella:gv('f-estrella'),
+    diferencial:gv('f-dif'),
+    testimonios:gv('f-test'),
+    redes:SEL.redes.slice(),
+    usuarios:gv('f-users'),
+    frecuencia:gv('f-frec'),
+    contenidoTipo:gv('f-ctipo'),
+    herramientas:SEL.herr.slice(),
+    tiempoRedes:gv('f-tredes'),
+    intentos:SEL.intent.slice(),
+    meta:gv('f-meta'),
+    dolor:gv('f-dolor'),
+    insight:gv('f-insight'),
+    temperatura:gv('f-temp'),
+    presupuesto:gv('f-pres'),
+    dolores:SEL.dolores.slice(),
+    objeciones:SEL.objs.slice(),
+    analisis:null
   };
-  
+
+  s.analisis=await analizarIA(s);
   DB.push(s);
-  localStorage.setItem('andi_db', JSON.stringify(DB));
-  
-  document.getElementById('msg-g').style.display = 'block';
-  setTimeout(() => {
-      document.getElementById('msg-g').style.display = 'none';
-      location.reload(); // Recarga para limpiar campos
-  }, 1500);
+  saveDB();
+  updateHeaderCount();
+  resetForm();
+  btn.disabled=false;btn.textContent='Guardar y analizar con IA';
+  var m=document.getElementById('msg-ok');m.style.display='inline';
+  setTimeout(function(){m.style.display='none';},3500);
 }
 
-function renderPat() {
-  let el = document.getElementById('pat-content');
-  if(!DB.length) return;
-  
-  let freq = {};
-  DB.forEach(s => s.dolores.forEach(d => freq[d] = (freq[d] || 0) + 1));
-  let sorted = Object.entries(freq).sort((a,b) => b[1]-a[1]);
-  
-  let html = `
-    <div class="metrics">
-        <div class="metric"><div class="metric-label">Sesiones</div><div class="metric-val">${DB.length}</div></div>
-        <div class="metric"><div class="metric-label">Dolor Top</div><div class="metric-val" style="font-size:12px">${sorted[0]?.[0] || '-'}</div></div>
-    </div>
-    <div class="slabel">Frecuencia de Dolores</div>
-  `;
-  
-  sorted.forEach(([d, count]) => {
-      let pct = (count / DB.length) * 100;
-      html += `
-        <div class="card">
-            <div style="display:flex; justify-content:space-between; font-size:12px"><span>${d}</span><span>${count}x</span></div>
-            <div class="pbar"><div class="pfill" style="width:${pct}%"></div></div>
-        </div>
-      `;
+// IA ANALYSIS
+async function analizarIA(s){
+  var prompt='Eres Andy Vila, mentora de marketing digital para mamás emprendedoras con el Método ANDI (Atracción, Narrativa, Demanda, Ingresos). Analiza este perfil de clienta potencial y entrega un análisis estratégico conciso en español.\n\nDATOS:\nNombre: '+s.nombre+'\nNegocio: '+s.negocio+' en '+s.ciudad+'\nAntigüedad: '+s.tiempo+'\nContexto: '+s.contexto+'\nServicios: '+s.servicios+'\nModelo: '+s.modelo+' | Precio: '+s.precio+'\nClientes: '+s.clientesSem+'/semana | Nuevos: '+s.clientesMes+'/mes\nCómo consigue clientes: '+s.como+'\nDescuentos: '+s.descuentos+'\nAvatar: '+s.avatar+' | Estrella: '+s.estrella+'\nDiferencial: '+s.diferencial+'\nRedes: '+s.redes.join(', ')+' | Frecuencia: '+s.frecuencia+'\nContenido: '+s.contenidoTipo+'\nHerramientas: '+s.herramientas.join(', ')+'\nTiempo disponible: '+s.tiempoRedes+'\nHa intentado: '+s.intentos.join(', ')+'\nMeta: '+s.meta+'\nDolor literal: '+s.dolor+'\nInsight: '+s.insight+'\nTemperatura: '+s.temperatura+' | Presupuesto: '+s.presupuesto+'\nDolores: '+s.dolores.join(', ')+'\nObjeciones: '+s.objeciones.join(', ')+'\n\nEntrega EXACTAMENTE este formato sin markdown ni asteriscos:\n\nDIAGNÓSTICO RÁPIDO\n[2-3 oraciones sobre su situación real hoy]\n\nSU MAYOR OPORTUNIDAD\n[1-2 oraciones sobre qué puede cambiar primero]\n\nDOLORES CLAVE\n[3-4 dolores específicos de esta clienta]\n\nLO QUE NO ESTÁ FUNCIONANDO\n[El patrón de error principal en 1-2 oraciones]\n\nOFERTA RECOMENDADA\n[Mentoría 1:1, microproducto o bootcamp — cuál y por qué]\n\nGANCHO DE CONTENIDO\n[Una idea de contenido que Andy podría crear basada en este perfil sin revelar datos privados]\n\nALERTA ESTRATÉGICA\n[Una cosa que Andy debe cuidar al trabajar con esta clienta]';
+
+  try{
+    var res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:900,messages:[{role:'user',content:prompt}]})
+    });
+    var data=await res.json();
+    return data.content&&data.content[0]?data.content[0].text:'Análisis no disponible. El perfil fue guardado correctamente.';
+  }catch(e){return 'Sin conexión a IA. El perfil fue guardado. Puedes reanalizarlo desde "Para la sesión".';}
+}
+
+// RESET
+function resetForm(){
+  ['f-nombre','f-negocio','f-ciudad','f-contexto','f-servicios','f-users','f-dif','f-test','f-meta','f-dolor','f-insight','f-cls','f-clm','f-como'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});
+  ['f-tiempo','f-modelo','f-precio','f-desc','f-avatar','f-estrella','f-frec','f-ctipo','f-tredes','f-temp','f-pres'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});
+  document.querySelectorAll('.chip.on').forEach(function(c){c.classList.remove('on');});
+  SEL={redes:[],herr:[],intent:[],dolores:[],objs:[]};
+}
+
+// REPOSITORIO
+function renderRepo(){
+  var el=document.getElementById('repo-content');
+  if(!DB.length){el.innerHTML='<div class="empty">Aún no hay clientas guardadas.<br>Empieza con "Nueva clienta".</div>';return;}
+  el.innerHTML=DB.slice().reverse().map(function(s,ri){
+    var idx=DB.length-1-ri;
+    var tb='';
+    if(s.temperatura==='Caliente')tb='<span class="temp-badge temp-c">Caliente</span>';
+    else if(s.temperatura==='Tibio')tb='<span class="temp-badge temp-t">Tibio</span>';
+    else if(s.temperatura==='Frío')tb='<span class="temp-badge temp-f">Frío</span>';
+    var ia=s.analisis?'<span class="tag t-o" style="float:right">IA ✓</span>':'';
+    return '<div class="client-card" onclick="verDetalle('+idx+')">'+
+      '<div style="display:flex;justify-content:space-between;align-items:flex-start">'+
+      '<div><div class="client-name">'+s.nombre+tb+'</div>'+
+      '<div class="client-meta">'+s.negocio+(s.ciudad?' · '+s.ciudad:'')+(s.fecha?' · '+s.fecha:'')+'</div></div>'+
+      ia+'</div>'+
+      (s.meta?'<div style="margin-top:6px"><span class="tag t-p">'+s.meta.substring(0,50)+'</span></div>':'')+
+      '</div>';
+  }).join('');
+}
+
+function verDetalle(idx){
+  var s=DB[idx];if(!s)return;
+  document.getElementById('repo-list').style.display='none';
+  document.getElementById('repo-detail').style.display='block';
+  var h='<div class="page-title">'+s.nombre+'</div>'+
+    '<div class="page-sub">'+s.negocio+(s.ciudad?' · '+s.ciudad:'')+(s.tiempo?' · '+s.tiempo:'')+(s.fecha?' · '+s.fecha:'')+'</div>';
+
+  if(s.contexto)h+='<div class="card"><div style="font-size:12px;color:var(--txt2)"><strong style="color:var(--txt)">Contexto:</strong> '+s.contexto+'</div></div>';
+
+  h+='<div class="card">'+
+    '<div style="font-size:10px;font-weight:600;color:var(--txt3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Negocio</div>'+
+    (s.servicios?'<div style="font-size:13px;color:var(--txt2);margin-bottom:5px"><strong style="color:var(--txt)">Servicios:</strong> '+s.servicios+'</div>':'')+
+    (s.precio&&s.precio!=='No mencionó'?'<div style="font-size:13px;color:var(--txt2);margin-bottom:5px"><strong style="color:var(--txt)">Precio promedio:</strong> '+s.precio+'</div>':'')+
+    (s.como?'<div style="font-size:13px;color:var(--txt2);margin-bottom:5px"><strong style="color:var(--txt)">Consigue clientes:</strong> '+s.como+'</div>':'')+
+    (s.diferencial?'<div style="font-size:13px;color:var(--txt2)"><strong style="color:var(--txt)">Diferencial:</strong> '+s.diferencial+'</div>':'')+
+  '</div>';
+
+  if(s.redes&&s.redes.length){
+    h+='<div class="card">'+
+      '<div style="font-size:10px;font-weight:600;color:var(--txt3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Redes sociales</div>'+
+      s.redes.map(function(r){return '<span class="tag t-p">'+r+'</span>';}).join('')+
+      (s.usuarios?'<div style="font-size:13px;color:var(--txt2);margin-top:6px">'+s.usuarios+'</div>':'')+
+      (s.frecuencia?'<div style="font-size:13px;color:var(--txt2);margin-top:4px">Publica: '+s.frecuencia+'</div>':'')+
+    '</div>';
+  }
+
+  if(s.dolores&&s.dolores.length){
+    h+='<div class="card">'+
+      '<div style="font-size:10px;font-weight:600;color:var(--txt3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Dolores identificados</div>'+
+      s.dolores.map(function(d){return '<span class="tag t-d">'+d+'</span>';}).join('')+
+    '</div>';
+  }
+
+  if(s.dolor){
+    h+='<div class="warn"><div class="warn-label">Mayor dolor — sus palabras exactas</div>'+
+      '<div class="warn-text" style="font-style:italic">"'+s.dolor+'"</div></div>';
+  }
+
+  if(s.insight){
+    h+='<div class="hl"><div class="hl-label">Insight clave</div>'+
+      '<div class="hl-text" style="font-style:italic">"'+s.insight+'"</div></div>';
+  }
+
+  if(s.analisis){
+    h+='<div class="ok"><div class="ok-label">Análisis IA — Método ANDI</div>'+
+      '<div class="ok-text">'+s.analisis+'</div></div>';
+  }
+
+  h+='<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px">'+
+    '<button class="btn-ia" onclick="reanalizar('+idx+')">Reanalizar con IA ↗</button>'+
+    '<button class="btn-sec" onclick="eliminar('+idx+')">Eliminar perfil</button>'+
+  '</div>';
+
+  document.getElementById('detail-content').innerHTML=h;
+}
+
+function backRepo(){
+  document.getElementById('repo-list').style.display='block';
+  document.getElementById('repo-detail').style.display='none';
+  renderRepo();
+}
+
+function eliminar(idx){
+  if(!confirm('¿Eliminar el perfil de '+DB[idx].nombre+'? Esta acción no se puede deshacer.'))return;
+  DB.splice(idx,1);saveDB();updateHeaderCount();backRepo();
+}
+
+// PATRONES
+function renderPatron(){
+  var el=document.getElementById('patron-content');
+  if(!DB.length){el.innerHTML='<div class="empty">Guarda al menos una sesión para ver patrones.</div>';return;}
+
+  var cal=DB.filter(function(s){return s.temperatura==='Caliente';}).length;
+  var cp=DB.filter(function(s){return s.presupuesto==='Sí, definido'||s.presupuesto==='Sí, con duda';}).length;
+  var ia=DB.filter(function(s){return s.analisis;}).length;
+
+  var html='<div class="metrics">'+
+    '<div class="metric"><div class="metric-label">Clientas totales</div><div class="metric-val">'+DB.length+'</div></div>'+
+    '<div class="metric"><div class="metric-label">Leads calientes</div><div class="metric-val">'+cal+'</div></div>'+
+    '<div class="metric"><div class="metric-label">Con presupuesto</div><div class="metric-val">'+cp+'</div></div>'+
+  '</div>';
+
+  // Dolores
+  var df={};
+  DB.forEach(function(s){
+    s.dolores.forEach(function(d){df[d]=(df[d]||0)+1;});
+    if(s.dolor&&s.dolor.length>5) df[s.dolor.substring(0,45)+'…']=(df[s.dolor.substring(0,45)+'…']||0)+1;
   });
-  el.innerHTML = html;
+  var ds=Object.entries(df).sort(function(a,b){return b[1]-a[1];}).slice(0,6);
+  if(ds.length){
+    html+='<div style="font-size:10px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--txt3);margin-bottom:.6rem;margin-top:.25rem">Dolores más frecuentes</div>';
+    ds.forEach(function(e){
+      var p=Math.round(e[1]/ds[0][1]*100);
+      html+='<div style="margin-bottom:8px"><div style="display:flex;justify-content:space-between;font-size:12px;color:var(--txt2);margin-bottom:3px"><span>'+e[0]+'</span><span>'+e[1]+'x</span></div><div class="pbar"><div class="pfill" style="width:'+p+'%"></div></div></div>';
+    });
+  }
+
+  // Objeciones
+  var of={};
+  DB.forEach(function(s){s.objeciones.forEach(function(o){of[o]=(of[o]||0)+1;});});
+  var os=Object.entries(of).sort(function(a,b){return b[1]-a[1];});
+  if(os.length){
+    html+='<div style="font-size:10px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--txt3);margin:.9rem 0 .5rem">Objeciones frecuentes</div>';
+    html+=os.map(function(e){return '<span class="tag t-a">'+e[0]+' ('+e[1]+'x)</span>';}).join('');
+  }
+
+  // Intentos
+  var inf={};
+  DB.forEach(function(s){s.intentos.forEach(function(i){inf[i]=(inf[i]||0)+1;});});
+  var is=Object.entries(inf).sort(function(a,b){return b[1]-a[1];});
+  if(is.length){
+    html+='<div style="font-size:10px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--txt3);margin:.9rem 0 .5rem">Ya intentaron sin resultado</div>';
+    html+=is.map(function(e){return '<span class="tag t-d">'+e[0]+' ('+e[1]+'x)</span>';}).join('');
+  }
+
+  // Insights
+  var ins=DB.filter(function(s){return s.insight;}).slice().reverse();
+  if(ins.length){
+    html+='<div style="font-size:10px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--txt3);margin:.9rem 0 .5rem">Frases literales de tus clientas</div>';
+    html+=ins.map(function(s){
+      return '<div class="iitem">'+
+        '<div style="font-size:11px;color:var(--txt3)">'+s.nombre+' · '+s.negocio+(s.fecha?' · '+s.fecha:'')+'</div>'+
+        '<div style="font-size:13px;color:var(--txt);margin-top:3px;font-style:italic;line-height:1.5">"'+s.insight+'"</div>'+
+      '</div>';
+    }).join('');
+  }
+
+  el.innerHTML=html;
 }
 
-function fillPSel() {
-  let sel = document.getElementById('p-sel');
-  sel.innerHTML = '<option value="">— Selecciona sesión —</option>' + 
-    DB.map((s, i) => `<option value="${i}">${s.nombre} (${s.negocio})</option>`).join('');
+// SESIÓN
+function fillSesSel(){
+  var sel=document.getElementById('ses-sel');
+  sel.innerHTML='<option value="">— elige una —</option>';
+  DB.slice().reverse().forEach(function(s,ri){
+    var idx=DB.length-1-ri;
+    sel.innerHTML+='<option value="'+idx+'">'+s.nombre+' · '+s.negocio+'</option>';
+  });
+  document.getElementById('ses-output').innerHTML='';
 }
 
-function mostrarPropuesta() {
-  let idx = document.getElementById('p-sel').value;
-  if(idx === "") return;
-  let s = DB[idx];
-  document.getElementById('prop-output').innerHTML = `
-    <div class="pb">
-        <div class="plabel">Diagnóstico para ${s.nombre}</div>
-        <div class="ptext">Consigue clientes por <strong>${s.clientes}</strong>. Su mayor reto es: <em>"${s.dolorTxt}"</em>.</div>
-    </div>
-    <div class="pb">
-        <div class="plabel">Oferta Recomendada</div>
-        <div class="ptext">Mentoría 1:1 enfocada en su meta de <strong>${s.meta}</strong>, aplicando el Método A.N.D.I para posicionarla como autoridad.</div>
-    </div>
-  `;
+function cargarSesion(){
+  var idx=document.getElementById('ses-sel').value;
+  var out=document.getElementById('ses-output');
+  if(idx===''){out.innerHTML='';return;}
+  var s=DB[parseInt(idx)];
+  if(!s){out.innerHTML='';return;}
+
+  var html='<div class="hl">'+
+    '<div class="hl-label">Resumen para tu sesión con '+s.nombre+'</div>'+
+    '<div class="hl-text">'+
+    (s.meta?'<strong>Meta:</strong> '+s.meta+'<br>':'')+
+    (s.diferencial?'<strong>Su diferencial real:</strong> '+s.diferencial+'<br>':'')+
+    (s.dolor?'<strong>Mayor dolor:</strong> "'+s.dolor+'"<br>':'')+
+    (s.objeciones&&s.objeciones.length?'<strong>Objeciones a manejar:</strong> '+s.objeciones.join(', ')+'<br>':'')+
+    (s.presupuesto?'<strong>Presupuesto:</strong> '+s.presupuesto:'')+'</div></div>';
+
+  if(s.analisis){
+    html+='<div class="ok"><div class="ok-label">Análisis IA previo</div><div class="ok-text">'+s.analisis+'</div></div>';
+  }
+
+  html+='<div class="card" style="margin-top:4px">'+
+    '<div style="font-size:13px;font-weight:500;color:var(--txt);margin-bottom:8px">Genera un análisis fresco antes de esta sesión</div>'+
+    '<div id="ses-loading"></div>'+
+    '<button class="btn-ia" onclick="reanalizar('+parseInt(idx)+')">Reanalizar con IA ↗</button>'+
+  '</div>';
+
+  out.innerHTML=html;
 }
 
-function renderCont() {
-    let el = document.getElementById('cont-output');
-    if(!DB.length) return;
-    
-    let ideas = [
-        { fmt: 'Reel', txt: '¿Te sientes esclava de tu negocio? Aquí el paso a paso para liberarte.' },
-        { fmt: 'Carrusel', txt: '3 razones por las que no vendes en Instagram (Spoiler: No es el algoritmo).' },
-        { fmt: 'Story', txt: 'Lo que una clienta me confesó hoy sobre su miedo a la cámara...' }
-    ];
-    
-    el.innerHTML = ideas.map(i => `
-        <div class="card">
-            <div style="display:flex; justify-content:space-between">
-                <div class="ptext" style="font-weight:500">${i.txt}</div>
-                <span class="tag tm">${i.fmt}</span>
-            </div>
-        </div>
-    `).join('');
+async function reanalizar(idx){
+  var s=DB[idx];if(!s)return;
+  var loadEl=document.getElementById('ses-loading');
+  if(loadEl) loadEl.innerHTML='<div class="loading"><div class="dot"></div><div class="dot"></div><div class="dot"></div><span>Analizando con IA...</span></div>';
+  s.analisis=await analizarIA(s);
+  DB[idx]=s;saveDB();
+  cargarSesion();
 }
 </script>
 </body>
